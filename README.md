@@ -1,2 +1,2 @@
 # noma
-Not MinigameAPI - minigame framework for the cow network
+Not MinigameAPI - minigame framework for the cow network.
