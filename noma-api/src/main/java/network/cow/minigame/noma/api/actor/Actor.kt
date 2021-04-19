@@ -5,9 +5,9 @@ import java.awt.Color
 /**
  * @author Benedikt Wüller
  */
-abstract class Actor<T>(protected val initialName: String? = null, var color: Color = Color.WHITE) {
+abstract class Actor<PlayerType : Any>(protected val initialName: String? = null, var color: Color = Color.WHITE) {
 
-    private val players = mutableListOf<T>()
+    private val players = mutableListOf<PlayerType>()
 
     val size: Int; get() = this.players.size
 
@@ -17,14 +17,14 @@ abstract class Actor<T>(protected val initialName: String? = null, var color: Co
 
     open fun getName(): String = this.initialName ?: "¯\\_(ツ)_/¯"
 
-    fun addPlayer(player: T) = this.players.add(player)
+    fun addPlayer(player: PlayerType) = this.players.add(player)
 
-    fun removePlayer(player: T) = this.players.remove(player)
+    fun removePlayer(player: PlayerType) = this.players.remove(player)
 
     fun clearPlayers() = this.players.clear()
 
-    fun getPlayers(): List<T> = this.players
+    fun getPlayers(): List<PlayerType> = this.players
 
-    fun apply(executor: (T) -> Unit) = this.players.forEach { executor(it) }
+    fun apply(executor: (PlayerType) -> Unit) = this.players.forEach { executor(it) }
 
 }

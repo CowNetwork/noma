@@ -6,34 +6,34 @@ import network.cow.minigame.noma.api.config.ActorProviderConfig
 /**
  * @author Benedikt Wüller
  */
-abstract class ActorProvider<T>(protected val game: Game<T>, protected val config: ActorProviderConfig<T>) {
+abstract class ActorProvider<PlayerType : Any>(protected val game: Game<PlayerType>, protected val config: ActorProviderConfig<PlayerType>) {
 
-    private val playerActors = mutableMapOf<T, Actor<T>>()
+    private val playerActors = mutableMapOf<PlayerType, Actor<PlayerType>>()
 
-    fun addPlayer(player: T) {
+    fun addPlayer(player: PlayerType) {
         if (this.playerActors.containsKey(player)) return
         val actor = this.selectActor(player)
         this.playerActors[player] = actor
         actor.addPlayer(player)
 
         if (!this.game.getActors().contains(actor)) {
-            this.game.addActor(actor)
+            this.addActor(actor)
         }
     }
 
-    fun removePlayer(player: T) {
+    fun removePlayer(player: PlayerType) {
         val actor = this.playerActors.remove(player) ?: return
         actor.removePlayer(player)
 
         if (actor.isEmpty()) {
-            this.game.removeActor(actor)
+            this.removeActor(actor)
         }
     }
 
-    abstract fun selectActor(player: T) : Actor<T>
+    abstract fun selectActor(player: PlayerType) : Actor<PlayerType>
 
-    protected fun addActor(actor: Actor<T>) = this.game.addActor(actor)
+    protected fun addActor(actor: Actor<PlayerType>) = this.game.addActor(actor)
 
-    protected fun removeActor(actor: Actor<T>) = this.game.removeActor(actor)
+    protected fun removeActor(actor: Actor<PlayerType>) = this.game.removeActor(actor)
 
 }
