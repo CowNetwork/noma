@@ -11,6 +11,8 @@ import org.bukkit.SoundCategory
 import org.bukkit.WeatherType
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.Player
+import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 import java.awt.Color
 
 /**
@@ -108,5 +110,12 @@ class SpigotActor(name: String? = null, color: Color = Color.WHITE) : Actor<Play
             index = if (index == locations.lastIndex) 0 else (index + 1)
         }
     }
+
+    fun addItems(vararg items: ItemStack) = this.apply { it.inventory.addItem(*items) }
+    fun addItem(item: ItemStack) = this.addItems(item)
+    fun setItem(slot: Int, item: ItemStack) = this.apply { it.inventory.setItem(slot, item) }
+    fun setItem(slot: EquipmentSlot, item: ItemStack) = this.apply { it.inventory.setItem(slot, item) }
+
+    fun setHeldItemSlot(slot: Int) = this.apply { it.inventory.heldItemSlot = slot }
 
 }

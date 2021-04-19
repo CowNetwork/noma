@@ -1,5 +1,6 @@
 package network.cow.minigame.noma.spigot
 
+import network.cow.minigame.noma.api.CountdownTimer
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
@@ -16,11 +17,10 @@ import org.bukkit.plugin.java.JavaPlugin
 /**
  * @author Benedikt Wüller
  */
-open class SpigotGame(private val plugin: JavaPlugin, config: GameConfig<Player>, phaseConfigs: List<PhaseConfig<Player, *>>)
-    : Game<Player>(config, phaseConfigs), Listener {
+open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig<Player, *>>) : Game<Player>(config, phaseConfigs), Listener {
 
     init {
-        Bukkit.getPluginManager().registerEvents(this, this.plugin)
+        Bukkit.getPluginManager().registerEvents(this, NomaPlugin.INSTANCE)
     }
 
     override fun getNextPhaseKey(): String? {
@@ -55,5 +55,7 @@ open class SpigotGame(private val plugin: JavaPlugin, config: GameConfig<Player>
         this.actorProvider.removePlayer(player)
         this.getCurrentPhase().leave(player)
     }
+
+    override fun createCountdownTimer(duration: Long): CountdownTimer = SpigotCountdownTimer(duration)
 
 }

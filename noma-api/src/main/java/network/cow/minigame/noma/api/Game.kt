@@ -16,6 +16,11 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
     private val phases = LinkedHashMap<String, Phase<PlayerType, *>>()
     private lateinit var currentPhaseKey: String
 
+    private var switchTimer: CountdownTimer? = null
+    private var timeoutTimer: CountdownTimer? = null
+
+    var isStopping = false; private set
+
     val actorProvider: ActorProvider<PlayerType> = this.config.actorProvider.kind.getDeclaredConstructor(Game::class.java).newInstance(this)
 
     init {
@@ -33,16 +38,28 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
     }
 
     fun setPhase(key: String, skipCountdown: Boolean = false) {
+        if (this.isStopping) return
+
+        this.switchTimer?.reset()
+        this.switchTimer = null
+
+        this.timeoutTimer?.reset()
+        this.timeoutTimer = null
+
         val currentPhase = if (this::currentPhaseKey.isInitialized) this.getPhase(this.currentPhaseKey) else null
         val phase = this.getPhase(key)
         this.currentPhaseKey = key
 
-        // TODO: handle phase end countdown
+        val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
+        this.switchTimer = this.createCountdownTimer(duration).onDone {
+            currentPhase?.stop()
+            phase.start()
 
-        currentPhase?.stop()
-        phase.start()
-
-        // TODO: handle phase timeout
+            this.timeoutTimer = this.createCountdownTimer(phase.config.timeout.duration).silent().onDone {
+                phase.timeout()
+                this.nextPhase()
+            }.start()
+        }.start()
     }
 
     fun nextPhase(skipCountdown: Boolean = false) {
@@ -62,12 +79,22 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
     fun getCurrentPhase() = this.getPhase(this.currentPhaseKey)
 
     fun stop(skipCountdown: Boolean = false) {
-        // Stop current phase
-        val currentPhase = if (this::currentPhaseKey.isInitialized) this.getPhase(this.currentPhaseKey) else null
-        currentPhase?.stop() // TODO: handle phase end countdown
+        if (this.isStopping) return
+        this.isStopping = true
 
-        // Cleanup and stop the server.
-        this.onStop()
+        this.switchTimer?.reset()
+        this.switchTimer = null
+
+        val currentPhase = if (this::currentPhaseKey.isInitialized) this.getPhase(this.currentPhaseKey) else null
+
+        val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
+        this.switchTimer = this.createCountdownTimer(duration).onDone {
+            // Stop current phase
+            currentPhase?.stop()
+
+            // Cleanup and stop the server.
+            this.onStop()
+        }.start()
     }
 
     protected open fun getNextPhaseKey() : String? {
@@ -83,5 +110,7 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
     fun getActors() = this.actors.toTypedArray()
 
     protected abstract fun onStop()
+
+    protected abstract fun createCountdownTimer(duration: Long) : CountdownTimer
 
 }

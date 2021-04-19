@@ -5,4 +5,15 @@ import org.bukkit.plugin.java.JavaPlugin
 /**
  * @author Benedikt Wüller
  */
-class NomaPlugin : JavaPlugin()
+class NomaPlugin : JavaPlugin() {
+
+    companion object {
+        @JvmStatic
+        lateinit var INSTANCE: NomaPlugin
+    }
+
+    override fun onEnable() {
+        INSTANCE = this
+    }
+
+}
