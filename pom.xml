@@ -6,7 +6,12 @@
 
     <groupId>network.cow.minigame</groupId>
     <artifactId>noma</artifactId>
+    <packaging>pom</packaging>
     <version>1.0.0</version>
+    <modules>
+        <module>noma-api</module>
+        <module>noma-spigot</module>
+    </modules>
 
     <properties>
         <kotlin.version>1.4.32</kotlin.version>

@@ -1,0 +1,4 @@
+name: Noma
+main: network.cow.minigame.noma.spigot.NomaPlugin
+version: 1.0.0
+author: Benedikt Wüller
