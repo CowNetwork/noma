@@ -4,6 +4,8 @@ import network.cow.minigame.noma.api.CountdownTimer
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
+import network.cow.minigame.noma.api.phase.Phase
+import network.cow.minigame.noma.spigot.config.WorldProviderConfig
 import network.cow.minigame.noma.spigot.phase.SpigotPhase
 import network.cow.minigame.noma.spigot.world.DefaultWorldProvider
 import network.cow.minigame.noma.spigot.world.WorldProvider
@@ -40,6 +42,27 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         Bukkit.shutdown()
     }
 
+    override fun onSetPhase(oldPhase: Phase<Player, *>?, newPhase: Phase<Player, *>?) {
+        if (newPhase !is SpigotPhase) return
+        val config = newPhase.spigotConfig.worldProvider
+        this.worldProvider = config.kind.getDeclaredConstructor(SpigotGame::class.java, WorldProviderConfig::class.java).newInstance(this, config)
+        this.world = this.worldProvider.selectWorld()
+    }
+
+    fun getSpigotActor(player: Player) : SpigotActor? {
+        val actor = this.getActor(player) ?: return null
+        if (actor !is SpigotActor) return null
+        return actor
+    }
+
+    fun getSpigotActors() = this.getActors().filterIsInstance<SpigotActor>()
+
+    fun getScoreboardTeam(player: Player) : Team? = this.getSpigotActor(player)?.scoreboardTeam
+
+    fun getScoreboardTeams() = this.getActors().filterIsInstance<SpigotActor>().map { it.scoreboardTeam }
+
+    override fun createCountdownTimer(duration: Long): CountdownTimer = SpigotCountdownTimer(duration)
+
     @EventHandler
     private fun onPlayerJoin(event: PlayerJoinEvent) {
         val phase = this.getCurrentPhase()
@@ -66,19 +89,5 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         this.actorProvider.removePlayer(player)
         this.getCurrentPhase().leave(player)
     }
-
-    fun getSpigotActor(player: Player) : SpigotActor? {
-        val actor = this.getActor(player) ?: return null
-        if (actor !is SpigotActor) return null
-        return actor
-    }
-
-    fun getSpigotActors() = this.getActors().filterIsInstance<SpigotActor>()
-
-    fun getScoreboardTeam(player: Player) : Team? = this.getSpigotActor(player)?.scoreboardTeam
-
-    fun getScoreboardTeams() = this.getActors().filterIsInstance<SpigotActor>().map { it.scoreboardTeam }
-
-    override fun createCountdownTimer(duration: Long): CountdownTimer = SpigotCountdownTimer(duration)
 
 }

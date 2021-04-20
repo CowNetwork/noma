@@ -56,6 +56,7 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
         val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
         this.switchTimer = this.createCountdownTimer(duration).onDone {
             currentPhase?.stop()
+            this.onSetPhase(currentPhase, phase)
             phase.start()
 
             this.timeoutTimer = this.createCountdownTimer(phase.config.timeout.duration).silent().onDone {
@@ -94,6 +95,7 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
         this.switchTimer = this.createCountdownTimer(duration).onDone {
             // Stop current phase
             currentPhase?.stop()
+            this.onSetPhase(currentPhase, null)
 
             // Cleanup and stop the server.
             this.onStop()
@@ -122,6 +124,8 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
     fun getActor(player: PlayerType) = this.actors.firstOrNull { it.getPlayers().contains(player) }
 
     protected abstract fun onStop()
+
+    protected abstract fun onSetPhase(oldPhase: Phase<PlayerType, *>?, newPhase: Phase<PlayerType, *>?)
 
     protected abstract fun createCountdownTimer(duration: Long) : CountdownTimer
 
