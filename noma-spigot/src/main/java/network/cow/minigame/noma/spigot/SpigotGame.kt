@@ -13,6 +13,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scoreboard.Team
 
 /**
  * @author Benedikt Wüller
@@ -55,6 +56,14 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         this.actorProvider.removePlayer(player)
         this.getCurrentPhase().leave(player)
     }
+
+    fun getScoreboardTeam(player: Player) : Team? {
+        val actor = this.getActor(player) ?: return null
+        if (actor !is SpigotActor) return null
+        return actor.scoreboardTeam
+    }
+
+    fun getScoreboardTeams() = this.getActors().filterIsInstance<SpigotActor>().map { it.scoreboardTeam }
 
     override fun createCountdownTimer(duration: Long): CountdownTimer = SpigotCountdownTimer(duration)
 

@@ -8,6 +8,7 @@ import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PhaseEndCountdown
 import network.cow.minigame.noma.api.config.PhaseTimeout
 import network.cow.minigame.noma.api.phase.Phase
+import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
@@ -24,6 +25,8 @@ open class NomaGamePlugin : JavaPlugin() {
     lateinit var game: Game<Player>; protected set
 
     override fun onEnable() {
+        Bukkit.getScoreboardManager().mainScoreboard.teams.forEach { it.unregister() }
+
         val basePath = this.dataFolder.absolutePath
         val config = this.config
 

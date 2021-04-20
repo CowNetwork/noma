@@ -26,7 +26,7 @@ class TeamActorProvider(game: Game<Player>, config: ActorProviderConfig<Player>)
             if (name == null || name.isEmpty()) error("The option 'game.actorProviders.teams.*.name' must be provided.")
 
             val color = team.getOrDefault("color", "#FFFFFF").toString().toColor()
-            this.addActor(SpigotActor(name, color))
+            this.addActor(SpigotActor(null, color, true))
         }
 
         this.maxPlayersPerTeam = this.config.options.getOrDefault(

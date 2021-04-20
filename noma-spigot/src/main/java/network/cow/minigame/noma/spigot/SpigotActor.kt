@@ -1,7 +1,10 @@
 package network.cow.minigame.noma.spigot
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import network.cow.minigame.noma.api.actor.Actor
+import org.bukkit.Bukkit
 import org.bukkit.DyeColor
 import org.bukkit.Effect
 import org.bukkit.Location
@@ -13,12 +16,22 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
+import org.bukkit.scoreboard.Team
 import java.awt.Color
+import java.util.UUID
 
 /**
  * @author Benedikt Wüller
  */
-class SpigotActor(name: String? = null, color: Color = Color.WHITE) : Actor<Player>(name, color) {
+class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val showPrefix: Boolean = false, prefixColor: Color = color)
+    : Actor<Player>(name, color) {
+
+    private val textColor = NamedTextColor.nearestTo(TextColor.color(this.color.red, this.color.green, this.color.blue))
+    private val prefixColor = NamedTextColor.nearestTo(TextColor.color(prefixColor.red, prefixColor.green, prefixColor.blue))
+
+    private lateinit var compassTarget: Location
+
+    val scoreboardTeam: Team
 
     var weather: WeatherType = WeatherType.CLEAR
         set(value) {
@@ -26,14 +39,49 @@ class SpigotActor(name: String? = null, color: Color = Color.WHITE) : Actor<Play
             this.apply { it.setPlayerWeather(value) }
         }
 
-    private lateinit var compassTarget: Location
+    init {
+        val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+        this.scoreboardTeam = scoreboard.registerNewTeam(this.initialName ?: UUID.randomUUID().toString().replace("-", "").substring(0, 16))
+        this.scoreboardTeam.color(this.textColor)
+    }
 
-    override fun getName(): String {
+    override fun calculateName(): String {
         if (this.initialName != null) return this.initialName
         val players = this.getPlayers()
-        if (players.size >= 2) return players.first().name.substring(0, 2) + players[1].name.substring(0, 2)
-        if (players.isNotEmpty()) return players.first().name.substring(0, 4)
-        return super.getName()
+
+        var name = when {
+            players.size >= 3 -> players[0].name.substring(0, 2) + players[1].name.substring(0, 2) + players[2].name.substring(0, 2)
+            players.size >= 2 -> players[0].name.substring(0, 2) + players[1].name.substring(0, 2)
+            players.isNotEmpty() -> players.first().name.substring(0, 4)
+            else -> super.calculateName()
+        }
+
+        if (this.name != name) {
+            var number = 0
+            do {
+                val exists = Bukkit.getScoreboardManager().mainScoreboard.getTeam(name) != null
+                if (exists) number += 1
+            } while (exists)
+            if (number > 0) name = "$name$number"
+        }
+
+        return name
+    }
+
+    override fun updateName() {
+        super.updateName()
+        this.scoreboardTeam.displayName(Component.text(this.name, this.textColor))
+        if (this.showPrefix) {
+            this.scoreboardTeam.prefix(Component.text("[", NamedTextColor.DARK_GRAY).append(Component.text(this.name, this.prefixColor)).append(Component.text("] ", NamedTextColor.DARK_GRAY)))
+        }
+    }
+
+    override fun onPlayerJoin(player: Player) {
+        this.scoreboardTeam.addEntry(player.name)
+    }
+
+    override fun onPlayerLeave(player: Player) {
+        this.scoreboardTeam.removeEntry(player.name)
     }
 
     fun <T> playEffect(location: Location, effect: Effect, data: T) = this.apply { it.playEffect(location, effect, data) }

@@ -119,6 +119,8 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
 
     fun getActors() = this.actors.toTypedArray()
 
+    fun getActor(player: PlayerType) = this.actors.firstOrNull { it.getPlayers().contains(player) }
+
     protected abstract fun onStop()
 
     protected abstract fun createCountdownTimer(duration: Long) : CountdownTimer
