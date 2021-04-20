@@ -17,7 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin
 /**
  * @author Benedikt Wüller
  */
-open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig<Player, *>>) : Game<Player>(config, phaseConfigs), Listener {
+open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig<Player>>) : Game<Player>(config, phaseConfigs), Listener {
 
     init {
         Bukkit.getPluginManager().registerEvents(this, NomaPlugin.INSTANCE)
@@ -38,7 +38,7 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         val phase = this.getCurrentPhase()
         val player = event.player
 
-        if (!phase.config.allowsNewPlayers) {
+        if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && this.getPlayers().size >= this.config.maxPlayers)) {
             player.gameMode = GameMode.SPECTATOR
             return
         }

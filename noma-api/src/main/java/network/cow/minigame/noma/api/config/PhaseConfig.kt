@@ -5,9 +5,9 @@ import network.cow.minigame.noma.api.phase.Phase
 /**
  * @author Benedikt Wüller
  */
-data class PhaseConfig<PlayerType : Any, ResultType : Any>(
+data class PhaseConfig<PlayerType : Any>(
     val key: String,
-    val kind: Class<out Phase<PlayerType, ResultType>>,
+    val kind: Class<out Phase<PlayerType, *>>,
     val allowsNewPlayers: Boolean,
     val requiresActors: Boolean,
     val phaseEndCountdown: PhaseEndCountdown,

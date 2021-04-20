@@ -8,4 +8,4 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseConfig<Player, ResultType>) : Phase<Player, ResultType>(game, config)
+abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseConfig<Player>) : Phase<Player, ResultType>(game, config)

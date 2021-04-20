@@ -1,0 +1,8 @@
+phases:
+  - key: lobby
+    kind: network.cow.minigame.noma.example.spigot.phase.DummyPhase
+    allowsNewPlayers: true
+    phaseEndCountdown:
+      duration: 30
+    timeout:
+      duration: 30

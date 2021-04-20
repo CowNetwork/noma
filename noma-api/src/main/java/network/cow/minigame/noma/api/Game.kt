@@ -2,6 +2,7 @@ package network.cow.minigame.noma.api
 
 import network.cow.minigame.noma.api.actor.Actor
 import network.cow.minigame.noma.api.actor.ActorProvider
+import network.cow.minigame.noma.api.config.ActorProviderConfig
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.phase.Phase
@@ -9,7 +10,7 @@ import network.cow.minigame.noma.api.phase.Phase
 /**
  * @author Benedikt Wüller
  */
-abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val phaseConfigs: List<PhaseConfig<PlayerType, *>>) {
+abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val phaseConfigs: List<PhaseConfig<PlayerType>>) {
 
     private val actors = mutableListOf<Actor<PlayerType>>()
 
@@ -21,7 +22,9 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
 
     var isStopping = false; private set
 
-    val actorProvider: ActorProvider<PlayerType> = this.config.actorProvider.kind.getDeclaredConstructor(Game::class.java).newInstance(this)
+    val actorProvider: ActorProvider<PlayerType> = this.config.actorProvider.kind
+        .getDeclaredConstructor(Game::class.java, ActorProviderConfig::class.java)
+        .newInstance(this, this.config.actorProvider)
 
     init {
         if (this.phaseConfigs.isEmpty()) error("There must be at least one phase configured.")
@@ -100,7 +103,14 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
     protected open fun getNextPhaseKey() : String? {
         val keys = arrayListOf(*this.phases.keys.toTypedArray())
         val currentIndex = if (this::currentPhaseKey.isInitialized) keys.indexOf(this.currentPhaseKey) else -1
-        return keys[currentIndex + 1]
+        val nextIndex = currentIndex + 1
+        return if (nextIndex > keys.lastIndex) null else keys[nextIndex]
+    }
+
+    fun getPlayers() : Set<PlayerType> {
+        val players = mutableSetOf<PlayerType>()
+        this.actors.forEach { players.addAll(it.getPlayers()) }
+        return players
     }
 
     internal fun addActor(actor: Actor<PlayerType>) = this.actors.add(actor)

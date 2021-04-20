@@ -1,0 +1,4 @@
+game:
+  maxPlayers: 1
+  actorProvider:
+    kind: network.cow.minigame.noma.spigot.actor.OneToOneActorProvider

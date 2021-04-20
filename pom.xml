@@ -11,6 +11,7 @@
     <modules>
         <module>noma-api</module>
         <module>noma-spigot</module>
+        <module>noma-example-spigot</module>
     </modules>
 
     <properties>

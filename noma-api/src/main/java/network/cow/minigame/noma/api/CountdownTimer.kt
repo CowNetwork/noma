@@ -3,7 +3,7 @@ package network.cow.minigame.noma.api
 /**
  * @author Benedikt Wüller
  */
-abstract class CountdownTimer(val duration: Long) {
+abstract class CountdownTimer(var duration: Long) {
 
     var onDone: () -> Unit = {}
 
@@ -41,6 +41,9 @@ abstract class CountdownTimer(val duration: Long) {
             this.onDone()
             this.reset()
         } else {
+            if (this.displayIntervals.contains(this.duration)) {
+                this.displayTime(this.duration)
+            }
             this.onStartTimer()
         }
 

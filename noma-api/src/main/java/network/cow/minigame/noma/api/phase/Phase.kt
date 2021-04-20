@@ -6,7 +6,7 @@ import network.cow.minigame.noma.api.config.PhaseConfig
 /**
  * @author Benedikt Wüller
  */
-abstract class Phase<PlayerType : Any, ResultType : Any>(protected val game: Game<PlayerType>, val config: PhaseConfig<PlayerType, ResultType>) {
+abstract class Phase<PlayerType : Any, ResultType : Any>(protected val game: Game<PlayerType>, val config: PhaseConfig<PlayerType>) {
 
     private lateinit var result: ResultType
 
