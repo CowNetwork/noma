@@ -20,13 +20,13 @@ class TeamActorProvider(game: Game<Player>, config: ActorProviderConfig<Player>)
         if (teams.isEmpty()) error("The option 'game.actorProvider.teams' must contain at least one team.")
 
         teams.forEach {
-            val team = it as Map<String, Any>
+            val team = it as Map<*, *>
 
             val name = team["name"]?.toString()
             if (name == null || name.isEmpty()) error("The option 'game.actorProviders.teams.*.name' must be provided.")
 
             val color = team.getOrDefault("color", "#FFFFFF").toString().toColor()
-            this.addActor(SpigotActor(null, color, true))
+            this.addActor(SpigotActor(name, color, this.config.options["showPrefix"]?.toString()?.toBoolean() ?: false))
         }
 
         this.maxPlayersPerTeam = this.config.options.getOrDefault(

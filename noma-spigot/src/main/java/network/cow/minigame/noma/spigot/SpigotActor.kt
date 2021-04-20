@@ -23,8 +23,13 @@ import java.util.UUID
 /**
  * @author Benedikt Wüller
  */
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val showPrefix: Boolean = false, prefixColor: Color = color)
     : Actor<Player>(name, color) {
+
+    companion object {
+        const val SCOREBOARD_PREFIX = "noma:"
+    }
 
     private val textColor = NamedTextColor.nearestTo(TextColor.color(this.color.red, this.color.green, this.color.blue))
     private val prefixColor = NamedTextColor.nearestTo(TextColor.color(prefixColor.red, prefixColor.green, prefixColor.blue))
@@ -41,7 +46,7 @@ class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val 
 
     init {
         val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
-        this.scoreboardTeam = scoreboard.registerNewTeam(this.initialName ?: UUID.randomUUID().toString().replace("-", "").substring(0, 16))
+        this.scoreboardTeam = scoreboard.registerNewTeam(SCOREBOARD_PREFIX + (this.initialName ?: UUID.randomUUID().toString().replace("-", "").substring(0, 16)))
         this.scoreboardTeam.color(this.textColor)
     }
 
@@ -50,7 +55,7 @@ class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val 
         val players = this.getPlayers()
 
         var name = when {
-            players.size >= 3 -> players[0].name.substring(0, 2) + players[1].name.substring(0, 2) + players[2].name.substring(0, 2)
+            players.size == 3 -> players[0].name.substring(0, 2) + players[1].name.substring(0, 2) + players[2].name.substring(0, 2)
             players.size >= 2 -> players[0].name.substring(0, 2) + players[1].name.substring(0, 2)
             players.isNotEmpty() -> players.first().name.substring(0, 4)
             else -> super.calculateName()
@@ -72,7 +77,7 @@ class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val 
         super.updateName()
         this.scoreboardTeam.displayName(Component.text(this.name, this.textColor))
         if (this.showPrefix) {
-            this.scoreboardTeam.prefix(Component.text("[", NamedTextColor.DARK_GRAY).append(Component.text(this.name, this.prefixColor)).append(Component.text("] ", NamedTextColor.DARK_GRAY)))
+            this.scoreboardTeam.prefix(Component.text("[", NamedTextColor.GRAY).append(Component.text(this.name, this.prefixColor)).append(Component.text("] ", NamedTextColor.GRAY)))
         }
     }
 
@@ -142,13 +147,13 @@ class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val 
     fun sendMessage(message: String) = this.apply { it.sendMessage(message) }
     fun sendMessage(vararg messages: String) = this.apply { it.sendMessage(messages) }
 
-    fun teleport(vararg locations: Location) = this.teleport(TeleportMethod.ORDERED, *locations)
+    fun teleport(vararg locations: Location) = this.teleport(SelectionMethod.ORDERED, *locations)
 
-    fun teleport(method: TeleportMethod = TeleportMethod.ORDERED, vararg locations: Location) {
+    fun teleport(method: SelectionMethod = SelectionMethod.ORDERED, vararg locations: Location) {
         if (locations.isEmpty()) throw IllegalArgumentException("At least one location must be provided.")
 
         when (method) {
-            TeleportMethod.RANDOM -> locations.shuffle()
+            SelectionMethod.RANDOM -> locations.shuffle()
             else -> Unit
         }
 
@@ -161,8 +166,12 @@ class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val 
 
     fun addItems(vararg items: ItemStack) = this.apply { it.inventory.addItem(*items) }
     fun addItem(item: ItemStack) = this.addItems(item)
+
     fun setItem(slot: Int, item: ItemStack) = this.apply { it.inventory.setItem(slot, item) }
     fun setItem(slot: EquipmentSlot, item: ItemStack) = this.apply { it.inventory.setItem(slot, item) }
+
+    fun removeItems(vararg items: ItemStack) = this.apply { it.inventory.removeItem(*items) }
+    fun removeItemsAnySlot(vararg items: ItemStack) = this.apply { it.inventory.removeItemAnySlot(*items) }
 
     fun setHeldItemSlot(slot: Int) = this.apply { it.inventory.heldItemSlot = slot }
 

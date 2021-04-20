@@ -1,5 +1,6 @@
 package network.cow.minigame.noma.spigot
 
+import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -14,6 +15,10 @@ class NomaPlugin : JavaPlugin() {
 
     override fun onEnable() {
         INSTANCE = this
+
+        Bukkit.getScoreboardManager().mainScoreboard.teams
+            .filter { it.name.startsWith(SpigotActor.SCOREBOARD_PREFIX) }
+            .forEach { it.unregister() }
     }
 
 }

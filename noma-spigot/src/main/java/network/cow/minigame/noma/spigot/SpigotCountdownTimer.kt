@@ -1,8 +1,6 @@
 package network.cow.minigame.noma.spigot
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.Style
-import net.kyori.adventure.text.format.TextColor
 import network.cow.minigame.noma.api.CountdownTimer
 import org.bukkit.Bukkit
 import org.bukkit.scheduler.BukkitTask

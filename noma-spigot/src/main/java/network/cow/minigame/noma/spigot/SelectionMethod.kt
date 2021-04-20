@@ -1,6 +1,6 @@
 package network.cow.minigame.noma.spigot
 
-enum class TeleportMethod {
+enum class SelectionMethod {
     RANDOM,
     ORDERED
 }

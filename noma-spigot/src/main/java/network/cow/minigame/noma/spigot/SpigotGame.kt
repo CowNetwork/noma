@@ -4,21 +4,27 @@ import network.cow.minigame.noma.api.CountdownTimer
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
+import network.cow.minigame.noma.spigot.phase.SpigotPhase
+import network.cow.minigame.noma.spigot.world.DefaultWorldProvider
+import network.cow.minigame.noma.spigot.world.WorldProvider
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
+import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scoreboard.Team
 
 /**
  * @author Benedikt Wüller
  */
 open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig<Player>>) : Game<Player>(config, phaseConfigs), Listener {
+
+    var world: World = Bukkit.getWorlds().first(); private set
+    var worldProvider: WorldProvider = DefaultWorldProvider(this); private set
 
     init {
         Bukkit.getPluginManager().registerEvents(this, NomaPlugin.INSTANCE)
@@ -41,6 +47,10 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
 
         if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && this.getPlayers().size >= this.config.maxPlayers)) {
             player.gameMode = GameMode.SPECTATOR
+
+            // Teleport spectator to current world.
+            val method = if (phase is SpigotPhase) phase.spigotConfig.teleportSelectionMethod else SelectionMethod.ORDERED
+            player.teleport(this.worldProvider.getSpectatorSpawnLocation(method))
             return
         }
 
@@ -57,11 +67,15 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         this.getCurrentPhase().leave(player)
     }
 
-    fun getScoreboardTeam(player: Player) : Team? {
+    fun getSpigotActor(player: Player) : SpigotActor? {
         val actor = this.getActor(player) ?: return null
         if (actor !is SpigotActor) return null
-        return actor.scoreboardTeam
+        return actor
     }
+
+    fun getSpigotActors() = this.getActors().filterIsInstance<SpigotActor>()
+
+    fun getScoreboardTeam(player: Player) : Team? = this.getSpigotActor(player)?.scoreboardTeam
 
     fun getScoreboardTeams() = this.getActors().filterIsInstance<SpigotActor>().map { it.scoreboardTeam }
 
