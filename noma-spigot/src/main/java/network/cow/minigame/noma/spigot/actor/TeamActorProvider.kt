@@ -14,6 +14,8 @@ class TeamActorProvider(game: Game<Player>, config: ActorProviderConfig<Player>)
 
     private val maxPlayersPerTeam: Int
 
+    private val actors = mutableListOf<Actor<Player>>()
+
     init {
         val teams = this.config.options["teams"]
         if (teams == null || teams !is List<*>) error("The option 'game.actorProvider.teams' must be provided.")
@@ -26,21 +28,21 @@ class TeamActorProvider(game: Game<Player>, config: ActorProviderConfig<Player>)
             if (name == null || name.isEmpty()) error("The option 'game.actorProviders.teams.*.name' must be provided.")
 
             val color = team.getOrDefault("color", "#FFFFFF").toString().toColor()
-            this.addActor(SpigotActor(name, color, this.config.options.getOrDefault("showPrefix", false) as Boolean))
+            this.actors.add(SpigotActor(name, color, this.config.options.getOrDefault("showPrefix", false) as Boolean))
         }
 
         this.maxPlayersPerTeam = this.config.options.getOrDefault(
             "maxPlayersPerTeam",
-            this.game.config.maxPlayers / this.game.getActors().size
+            this.game.config.maxPlayers / this.actors.size
         ).toString().toInt()
 
-        if (this.maxPlayersPerTeam * this.game.getActors().size < this.game.config.maxPlayers) {
+        if (this.maxPlayersPerTeam * this.actors.size < this.game.config.maxPlayers) {
             error("There are not enough 'game.actorProviders.teams' items and/or 'game.actorProviders.maxPlayersPerTeam' for 'game.maxPlayers'.")
         }
     }
 
     override fun selectActor(player: Player): Actor<Player> {
-        val actors = this.game.getActors().filter { it.size < this.maxPlayersPerTeam }.shuffled()
+        val actors = this.actors.filter { it.size < this.maxPlayersPerTeam }.shuffled()
         return actors.minByOrNull { it.size } ?: error("No actor with less than 'maxPlayersPerTeam' ($maxPlayersPerTeam) could be found.")
     }
 

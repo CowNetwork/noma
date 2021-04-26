@@ -41,7 +41,7 @@ abstract class CountdownTimer(var duration: Long) {
             this.onDone()
             this.reset()
         } else {
-            if (this.displayIntervals.contains(this.duration)) {
+            if (this.displayIntervals.contains(this.duration) && !this.isSilent) {
                 this.displayTime(this.duration)
             }
             this.onStartTimer()

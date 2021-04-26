@@ -3,4 +3,4 @@ main: network.cow.minigame.noma.example.spigot.NomaExamplePlugin
 version: 1.0.0
 api-version: 1.16
 author: Benedikt Wüller
-depend: [Noma]
+depend: [Noma, CloudEventsPlugin, Grape]

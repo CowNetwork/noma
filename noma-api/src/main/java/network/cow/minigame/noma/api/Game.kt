@@ -5,17 +5,25 @@ import network.cow.minigame.noma.api.actor.ActorProvider
 import network.cow.minigame.noma.api.config.ActorProviderConfig
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
+import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.phase.Phase
+import network.cow.minigame.noma.api.pool.Pool
 
 /**
  * @author Benedikt Wüller
  */
-abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val phaseConfigs: List<PhaseConfig<PlayerType>>) {
+abstract class Game<PlayerType : Any>(
+    val config: GameConfig<PlayerType>,
+    val phaseConfigs: List<PhaseConfig<PlayerType>>,
+    val poolConfigs: List<PoolConfig<PlayerType>>
+) {
 
     private val actors = mutableListOf<Actor<PlayerType>>()
 
     private val phases = LinkedHashMap<String, Phase<PlayerType, *>>()
     private lateinit var currentPhaseKey: String
+
+    private val pools = mutableMapOf<String, Pool<PlayerType, *>>()
 
     private var switchTimer: CountdownTimer? = null
     private var timeoutTimer: CountdownTimer? = null
@@ -28,6 +36,10 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
 
     init {
         if (this.phaseConfigs.isEmpty()) error("There must be at least one phase configured.")
+
+        this.poolConfigs.forEach {
+            this.pools[it.key] = it.kind.getDeclaredConstructor(Game::class.java, PoolConfig::class.java).newInstance(this, it)
+        }
 
         this.phaseConfigs.forEach {
             this.phases[it.key] = it.kind.getDeclaredConstructor(Game::class.java, PhaseConfig::class.java).newInstance(this, it)
@@ -54,7 +66,7 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
         this.currentPhaseKey = key
 
         val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
-        this.switchTimer = this.createCountdownTimer(duration).onDone {
+        this.switchTimer = this.createCountdownTimer(duration, currentPhase?.config?.key).onDone {
             currentPhase?.stop()
             this.onSetPhase(currentPhase, phase)
             phase.start()
@@ -80,7 +92,17 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
 
     fun getPhase(key: String) = this.phases[key] ?: error("The given key does not exist for 'phases.*.key'.")
 
+    fun <T : Any> getPhase(key: String, type: Class<out Phase<PlayerType, T>>) : Phase<PlayerType, T> = type.cast(this.getPhase(key))
+
     fun getCurrentPhase() = this.getPhase(this.currentPhaseKey)
+
+    fun getPhaseResult(key: String) = this.getPhase(key).getResult()
+
+    fun getPool(key: String) = this.pools[key] ?: error("The given key does not exist for 'pools.*.key'.")
+
+    fun <T : Any> getTypedPool(key: String) = this.getPool(key) as Pool<PlayerType, T>
+
+    fun <T : Any> getPhaseResult(key: String, type: Class<out Phase<PlayerType, T>>) : T = this.getPhase(key, type).getResult()
 
     fun stop(skipCountdown: Boolean = false) {
         if (this.isStopping) return
@@ -92,7 +114,7 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
         val currentPhase = if (this::currentPhaseKey.isInitialized) this.getPhase(this.currentPhaseKey) else null
 
         val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
-        this.switchTimer = this.createCountdownTimer(duration).onDone {
+        this.switchTimer = this.createCountdownTimer(duration, currentPhase?.config?.key).onDone {
             // Stop current phase
             currentPhase?.stop()
             this.onSetPhase(currentPhase, null)
@@ -127,6 +149,6 @@ abstract class Game<PlayerType : Any>(val config: GameConfig<PlayerType>, val ph
 
     protected abstract fun onSetPhase(oldPhase: Phase<PlayerType, *>?, newPhase: Phase<PlayerType, *>?)
 
-    protected abstract fun createCountdownTimer(duration: Long) : CountdownTimer
+    protected abstract fun createCountdownTimer(duration: Long, name: String? = null) : CountdownTimer
 
 }

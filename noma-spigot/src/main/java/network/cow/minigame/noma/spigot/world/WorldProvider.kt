@@ -1,6 +1,6 @@
 package network.cow.minigame.noma.spigot.world
 
-import network.cow.minigame.noma.spigot.SelectionMethod
+import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.spigot.SpigotActor
 import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.minigame.noma.spigot.config.WorldProviderConfig

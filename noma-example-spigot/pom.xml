@@ -24,6 +24,29 @@
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>network.cow</groupId>
+            <artifactId>messages-spigot</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>network.cow.cloudevents</groupId>
+            <artifactId>cloudevents-spigot</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>network.cow.grape</groupId>
+            <artifactId>grape-api</artifactId>
+            <version>0.3.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>network.cow.mooapis</groupId>
+            <artifactId>user</artifactId>
+            <version>v1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -32,9 +55,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.4</version>
-                <configuration>
-                    <finalName>noma-spigot-example</finalName>
-                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>

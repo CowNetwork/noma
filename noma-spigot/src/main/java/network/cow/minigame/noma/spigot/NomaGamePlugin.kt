@@ -7,11 +7,15 @@ import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PhaseEndCountdown
 import network.cow.minigame.noma.api.config.PhaseTimeout
+import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.phase.Phase
+import network.cow.minigame.noma.api.pool.Pool
+import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
+import java.lang.Exception
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.streams.toList
@@ -39,16 +43,31 @@ open class NomaGamePlugin : JavaPlugin() {
             listOf(phasesPath.toFile())
         }
 
+        val poolsPath = Paths.get(basePath, config.getString("noma.pools", "pools.yml"))
+        if (!Files.exists(poolsPath)) error("The file ${poolsPath.toAbsolutePath()} does not exist.")
+
+        val poolFiles = if (Files.isDirectory(poolsPath)) {
+            Files.list(poolsPath).map { it.toFile() }.toList()
+        } else {
+            listOf(poolsPath.toFile())
+        }
+
         this.game = SpigotGame(
             this.loadGameConfig(gamePath.toFile()),
-            this.loadPhaseConfigs(phaseFiles)
+            this.loadPhaseConfigs(phaseFiles),
+            this.loadPoolConfigs(poolFiles)
         )
 
         this.game.start()
     }
 
     override fun onDisable() {
-        this.game.stop(true)
+        try {
+            this.game.stop(true)
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            Bukkit.shutdown()
+        }
     }
 
     @Suppress("UncheckedCast")
@@ -64,7 +83,7 @@ open class NomaGamePlugin : JavaPlugin() {
                 val countdown = PhaseEndCountdown(((countdownMap["duration"] ?: 0) as Int).toLong())
 
                 val timeoutMap = (map["timeout"] ?: emptyMap<String, Any>()) as Map<*, *>
-                val timeout = PhaseTimeout(((timeoutMap["duration"] ?: 0) as Int).toLong())
+                val timeout = PhaseTimeout(((timeoutMap["duration"] ?: Int.MAX_VALUE) as Int).toLong())
 
                 configs.add(PhaseConfig(
                     map["key"]?.toString() ?: error("Field 'key' is missing for phase in ${file.name}."),
@@ -76,6 +95,24 @@ open class NomaGamePlugin : JavaPlugin() {
             }
         }
 
+        return configs
+    }
+
+    private fun loadPoolConfigs(files: Iterable<File>) : List<PoolConfig<Player>> {
+        val configs = mutableListOf<PoolConfig<Player>>()
+        files.forEach { file ->
+            val config = YamlConfiguration.loadConfiguration(file)
+            config.getMapList("pools").forEach {
+                val map = it as Map<String, Any>
+
+                configs.add(PoolConfig(
+                    map["key"]?.toString() ?: error("Field 'key' is missing for phase in ${file.name}."),
+                    Class.forName(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")) as Class<out Pool<Player, *>>,
+                    map.getOrDefault("items", emptyList<String>()) as List<String>,
+                    map
+                ))
+            }
+        }
         return configs
     }
 

@@ -1,4 +1,4 @@
-package network.cow.minigame.noma.spigot
+package network.cow.minigame.noma.api
 
 enum class SelectionMethod {
     RANDOM,

@@ -3,6 +3,7 @@ package network.cow.minigame.noma.spigot
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
+import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.api.actor.Actor
 import org.bukkit.Bukkit
 import org.bukkit.DyeColor
@@ -45,8 +46,11 @@ class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val 
         }
 
     init {
+        val scoreboardName = (SCOREBOARD_PREFIX + (this.initialName ?: UUID.randomUUID().toString().replace("-", "")))
+
         val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
-        this.scoreboardTeam = scoreboard.registerNewTeam(SCOREBOARD_PREFIX + (this.initialName ?: UUID.randomUUID().toString().replace("-", "").substring(0, 16)))
+
+        this.scoreboardTeam = scoreboard.registerNewTeam(scoreboardName.substring(0, minOf(16, scoreboardName.length)))
         this.scoreboardTeam.color(this.textColor)
     }
 

@@ -1,6 +1,6 @@
 package network.cow.minigame.noma.spigot.config
 
-import network.cow.minigame.noma.spigot.SelectionMethod
+import network.cow.minigame.noma.api.SelectionMethod
 
 /**
  * @author Benedikt Wüller

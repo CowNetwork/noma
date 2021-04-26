@@ -3,7 +3,7 @@ package network.cow.minigame.noma.spigot.phase
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.phase.Phase
-import network.cow.minigame.noma.spigot.SelectionMethod
+import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.spigot.SpigotActor
 import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.minigame.noma.spigot.config.SpigotPhaseConfig

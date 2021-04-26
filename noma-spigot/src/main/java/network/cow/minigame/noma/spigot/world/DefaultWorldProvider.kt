@@ -9,7 +9,7 @@ import org.bukkit.World
 /**
  * @author Benedikt Wüller
  */
-class DefaultWorldProvider(game: SpigotGame) : WorldProvider(game, WorldProviderConfig(DefaultWorldProvider::class.java, emptyMap())) {
+class DefaultWorldProvider(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
 
     override fun selectWorld(): World = this.game.world
 

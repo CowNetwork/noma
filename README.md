@@ -7,7 +7,7 @@ Not MinigameAPI - minigame framework for the cow network.
 - [x] Actors
 - [x] Countdown Timer
 - [x] Yaml Config Parsing
-- [ ] Voting / Pools
+- [x] Voting / Pools
 - [ ] Bukkit Events
 - [ ] Scoreboard Helpers
 - [ ] Statistics

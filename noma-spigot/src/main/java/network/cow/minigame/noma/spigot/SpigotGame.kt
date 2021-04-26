@@ -2,8 +2,10 @@ package network.cow.minigame.noma.spigot
 
 import network.cow.minigame.noma.api.CountdownTimer
 import network.cow.minigame.noma.api.Game
+import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
+import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.spigot.config.WorldProviderConfig
 import network.cow.minigame.noma.spigot.phase.SpigotPhase
@@ -23,10 +25,11 @@ import org.bukkit.scoreboard.Team
 /**
  * @author Benedikt Wüller
  */
-open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig<Player>>) : Game<Player>(config, phaseConfigs), Listener {
+open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig<Player>>, poolConfigs: List<PoolConfig<Player>>)
+    : Game<Player>(config, phaseConfigs, poolConfigs), Listener {
 
     var world: World = Bukkit.getWorlds().first(); private set
-    var worldProvider: WorldProvider = DefaultWorldProvider(this); private set
+    var worldProvider: WorldProvider = DefaultWorldProvider(this, WorldProviderConfig(DefaultWorldProvider::class.java, emptyMap())); private set
 
     init {
         Bukkit.getPluginManager().registerEvents(this, NomaPlugin.INSTANCE)
@@ -61,7 +64,7 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
 
     fun getScoreboardTeams() = this.getActors().filterIsInstance<SpigotActor>().map { it.scoreboardTeam }
 
-    override fun createCountdownTimer(duration: Long): CountdownTimer = SpigotCountdownTimer(duration)
+    override fun createCountdownTimer(duration: Long, name: String?): CountdownTimer = SpigotCountdownTimer(duration, name)
 
     @EventHandler
     private fun onPlayerJoin(event: PlayerJoinEvent) {
