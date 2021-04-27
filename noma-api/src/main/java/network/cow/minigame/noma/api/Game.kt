@@ -18,7 +18,7 @@ abstract class Game<PlayerType : Any>(
     val poolConfigs: List<PoolConfig<PlayerType>>
 ) {
 
-    private val actors = mutableListOf<Actor<PlayerType>>()
+    private val actors = mutableMapOf<String, Actor<PlayerType>>()
 
     private val phases = LinkedHashMap<String, Phase<PlayerType, *>>()
     private lateinit var currentPhaseKey: String
@@ -135,17 +135,19 @@ abstract class Game<PlayerType : Any>(
 
     fun getPlayers() : Set<PlayerType> {
         val players = mutableSetOf<PlayerType>()
-        this.actors.forEach { players.addAll(it.getPlayers()) }
+        this.actors.forEach { players.addAll(it.value.getPlayers()) }
         return players
     }
 
-    internal fun addActor(actor: Actor<PlayerType>) = this.actors.add(actor)
+    internal fun addActor(actor: Actor<PlayerType>) { this.actors[actor.key] = actor }
 
-    internal fun removeActor(actor: Actor<PlayerType>) = this.actors.remove(actor)
+    internal fun removeActor(actor: Actor<PlayerType>) = this.actors.values.remove(actor)
 
-    fun getActors() = this.actors.toTypedArray()
+    fun getActors() = this.actors.values.toTypedArray()
 
-    fun getActor(player: PlayerType) = this.actors.firstOrNull { it.getPlayers().contains(player) }
+    fun getActor(key: String) = this.actors[key]
+
+    fun getActor(player: PlayerType) = this.actors.entries.firstOrNull { it.value.getPlayers().contains(player) }?.value
 
     protected abstract fun onStop()
 

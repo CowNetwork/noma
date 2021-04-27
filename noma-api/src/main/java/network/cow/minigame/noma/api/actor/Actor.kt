@@ -1,11 +1,16 @@
 package network.cow.minigame.noma.api.actor
 
 import java.awt.Color
+import java.util.UUID
 
 /**
  * @author Benedikt Wüller
  */
-abstract class Actor<PlayerType : Any>(protected val initialName: String? = null, var color: Color = Color.WHITE) {
+abstract class Actor<PlayerType : Any>(
+    val key: String = UUID.randomUUID().toString(),
+    protected val initialName: String? = null,
+    var color: Color = Color.WHITE
+) {
 
     private val players = mutableListOf<PlayerType>()
 

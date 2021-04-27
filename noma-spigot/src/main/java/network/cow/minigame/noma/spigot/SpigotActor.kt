@@ -25,8 +25,13 @@ import java.util.UUID
  * @author Benedikt Wüller
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-class SpigotActor(name: String? = null, color: Color = Color.WHITE, private val showPrefix: Boolean = false, prefixColor: Color = color)
-    : Actor<Player>(name, color) {
+class SpigotActor(
+    key: String = UUID.randomUUID().toString(),
+    name: String? = null,
+    color: Color = Color.WHITE,
+    private val showPrefix: Boolean = false,
+    prefixColor: Color = color
+) : Actor<Player>(key, name, color) {
 
     companion object {
         const val SCOREBOARD_PREFIX = "noma:"

@@ -1,6 +1,5 @@
 package network.cow.minigame.noma.spigot
 
-import net.kyori.adventure.text.Component
 import network.cow.messages.adventure.formatToComponent
 import network.cow.messages.adventure.gradient
 import network.cow.messages.adventure.highlight
@@ -42,11 +41,6 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
 
     init {
         Bukkit.getPluginManager().registerEvents(this, JavaPlugin.getPlugin(NomaPlugin::class.java))
-    }
-
-    override fun getNextPhaseKey(): String? {
-        // TODO: use events to allow key override
-        return super.getNextPhaseKey()
     }
 
     override fun onStop() {

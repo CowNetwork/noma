@@ -8,8 +8,6 @@ import network.cow.minigame.noma.api.config.PoolConfig
  */
 class StringPool<PlayerType : Any>(game: Game<PlayerType>, config: PoolConfig<PlayerType>) : Pool<PlayerType, String>(game, config) {
 
-    override fun getItems(): List<String> = this.config.items
-
     override fun getItem(key: String): String = key
 
 }

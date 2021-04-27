@@ -14,14 +14,14 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase<VotePhase.Result<Any>>(game, config), CommandExecutor {
+open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase<VotePhase.Result<T>>(game, config), CommandExecutor {
 
     // TODO: rework with inventory or frame interface.
     // TODO: translation
 
     private val votes = mutableMapOf<Player, List<Int>>()
 
-    private val pool: Pool<Player, *>
+    private val pool: Pool<Player, T>
 
     val options: Int = this.config.options.getOrDefault("options", Int.MAX_VALUE) as Int
     val votesPerPlayer: Int = minOf(this.config.options.getOrDefault("votesPerPlayer", 1) as Int, this.options)
@@ -29,7 +29,7 @@ open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPh
 
     init {
         val key = this.config.options["pool"]?.toString() ?: error("The option 'phases.*.pool' is missing.")
-        this.pool = this.game.getPool(key)
+        this.pool = this.game.getPool(key) as Pool<Player, T>
 
         val selectionMethod = SelectionMethod.valueOf(this.config.options.getOrDefault("optionSelectionMethod", SelectionMethod.RANDOM.name).toString())
         this.items = when (selectionMethod) {
@@ -41,7 +41,6 @@ open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPh
     }
 
     override fun onStart() {
-        super.onStart()
         this.displayOptions()
     }
 
@@ -74,11 +73,16 @@ open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPh
         this.votes[player] = votes.take(this.votesPerPlayer)
     }
 
-    override fun onStop(): Result<Any> {
+    override fun onStop(): Result<T> {
         // Return the items with the most votes.
         val votes = mutableMapOf<String, Int>()
         this.items.forEachIndexed { index, item -> votes[item] = this.getVotes(index) }
-        return Result(votes.keys.map { ResultItem(it, this.pool.getItem(it), votes[it] ?: 0) }.sortedByDescending { it.votes }.take(this.options))
+
+        return Result(votes.keys
+            .map { ResultItem(it, this.pool.getItem(it), votes[it] ?: 0) }
+            .shuffled()
+            .sortedByDescending { it.votes }
+            .take(this.options))
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {

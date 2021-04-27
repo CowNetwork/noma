@@ -10,8 +10,6 @@ abstract class Pool<PlayerType : Any, ItemType : Any>(protected val game: Game<P
 
     open fun getKeys() : List<String> = this.config.items
 
-    abstract fun getItems() : List<ItemType>
-
     abstract fun getItem(key: String) : ItemType
 
 }

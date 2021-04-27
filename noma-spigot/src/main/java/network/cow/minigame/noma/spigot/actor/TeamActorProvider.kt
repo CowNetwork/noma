@@ -6,6 +6,7 @@ import network.cow.minigame.noma.api.config.ActorProviderConfig
 import network.cow.minigame.noma.spigot.SpigotActor
 import org.bukkit.entity.Player
 import java.awt.Color
+import java.util.UUID
 
 /**
  * @author Benedikt Wüller
@@ -24,11 +25,12 @@ class TeamActorProvider(game: Game<Player>, config: ActorProviderConfig<Player>)
         teams.forEach {
             val team = it as Map<*, *>
 
+            val key = team["key"]?.toString() ?: UUID.randomUUID().toString()
             val name = team["name"]?.toString()
             if (name == null || name.isEmpty()) error("The option 'game.actorProviders.teams.*.name' must be provided.")
 
             val color = team.getOrDefault("color", "#FFFFFF").toString().toColor()
-            this.actors.add(SpigotActor(name, color, this.config.options.getOrDefault("showPrefix", false) as Boolean))
+            this.actors.add(SpigotActor(key, name, color, this.config.options.getOrDefault("showPrefix", false) as Boolean))
         }
 
         this.maxPlayersPerTeam = this.config.options.getOrDefault(
