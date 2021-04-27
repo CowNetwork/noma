@@ -28,6 +28,8 @@ abstract class Game<PlayerType : Any>(
     private var switchTimer: CountdownTimer? = null
     private var timeoutTimer: CountdownTimer? = null
 
+    var state: Any? = object {}
+
     var isStopping = false; private set
 
     val actorProvider: ActorProvider<PlayerType> = this.config.actorProvider.kind
