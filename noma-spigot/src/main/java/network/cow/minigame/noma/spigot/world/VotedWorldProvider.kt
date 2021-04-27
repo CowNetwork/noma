@@ -32,7 +32,7 @@ class VotedWorldProvider(game: SpigotGame, config: WorldProviderConfig) : WorldP
         this.worldMeta = this.votePhase.getResult().items.first().item
 
         val targetName = UUID.randomUUID().toString()
-        worldMeta.path.toFile().copyTo(Paths.get(this.game.config.workingDirectory, targetName).toFile(), overwrite = true)
+        worldMeta.path.toFile().copyRecursively(Paths.get(this.game.config.workingDirectory, targetName).toFile(), overwrite = true)
 
         this.world = WorldCreator(targetName)
             .generateStructures(false)
