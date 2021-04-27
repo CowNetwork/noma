@@ -9,6 +9,7 @@ abstract class CountdownTimer(var duration: Long, baseTranslationKey: String = T
     protected val pluralTranslationKey = "$baseTranslationKey.plural"
 
     var onDone: () -> Unit = {}
+    var onTick: (Long) -> Unit = {}
 
     var isSilent: Boolean = false
 
@@ -23,6 +24,11 @@ abstract class CountdownTimer(var duration: Long, baseTranslationKey: String = T
 
     fun onDone(callback: () -> Unit) : CountdownTimer {
         this.onDone = callback
+        return this
+    }
+
+    fun onTick(callback: (Long) -> Unit) : CountdownTimer {
+        this.onTick = callback
         return this
     }
 
@@ -41,6 +47,7 @@ abstract class CountdownTimer(var duration: Long, baseTranslationKey: String = T
         this.isRunning = true
 
         if (this.secondsLeft <= 0) {
+            this.onTick(this.secondsLeft)
             this.onDone()
             this.reset()
         } else {
@@ -68,6 +75,7 @@ abstract class CountdownTimer(var duration: Long, baseTranslationKey: String = T
     protected fun decrement() {
         if (!this.isRunning) return
         this.secondsLeft -= 1
+        this.onTick(this.secondsLeft)
 
         if (this.secondsLeft <= 0) {
             this.onDone()

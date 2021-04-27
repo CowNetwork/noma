@@ -28,7 +28,7 @@ abstract class Game<PlayerType : Any>(
     private var switchTimer: CountdownTimer? = null
     private var timeoutTimer: CountdownTimer? = null
 
-    var state: Any? = object {}
+    var state: GameState = GameState(); private set
 
     var isStopping = false; private set
 
@@ -54,6 +54,11 @@ abstract class Game<PlayerType : Any>(
         this.nextPhase()
     }
 
+    fun updateState(state: GameState) {
+        this.state = state
+        // TODO: trigger instance update
+    }
+
     fun setPhase(key: String, skipCountdown: Boolean = false) {
         if (this.isStopping) return
 
@@ -73,12 +78,21 @@ abstract class Game<PlayerType : Any>(
             this.onSetPhase(currentPhase, phase)
             phase.start()
 
+            this.state.currentPhase = Phase(key, phase.config.timeout.duration)
+            this.updateState(this.state)
+
             this.timeoutTimer = this.createCountdownTimer(phase.config.timeout.duration, Translations.COUNTDOWN_MESSAGE_PHASE_TIMEOUT_BASE)
                 .silent(phase.config.timeout.silent)
                 .onDone {
                     phase.timeout()
                     this.nextPhase()
-                }.start()
+                }
+                .onTick {
+                    this.state.currentPhase?.secondsLeft = it
+                    this.updateState(this.state)
+                }
+                .start()
+
         }.start()
     }
 
