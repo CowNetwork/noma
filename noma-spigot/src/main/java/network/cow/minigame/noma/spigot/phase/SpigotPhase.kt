@@ -4,18 +4,26 @@ import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.api.SelectionMethod
+import network.cow.minigame.noma.spigot.NomaPlugin
 import network.cow.minigame.noma.spigot.SpigotActor
 import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.minigame.noma.spigot.config.SpigotPhaseConfig
 import network.cow.minigame.noma.spigot.config.WorldProviderConfig
 import network.cow.minigame.noma.spigot.world.DefaultWorldProvider
 import network.cow.minigame.noma.spigot.world.WorldProvider
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.bukkit.event.HandlerList
+import org.bukkit.event.Listener
+import org.bukkit.plugin.java.JavaPlugin
 
 /**
  * @author Benedikt Wüller
  */
-abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseConfig<Player>) : Phase<Player, ResultType>(game, config) {
+abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseConfig<Player>)
+    : Phase<Player, ResultType>(game, config), Listener {
+
+    private val listeners = this.getListeners()
 
     val spigotConfig: SpigotPhaseConfig
 
@@ -26,14 +34,18 @@ abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseCo
             worldProviderMap
         )
 
+        val teleportMap = this.config.options.getOrElse("teleport") { emptyMap<String, Any>() } as Map<String, Any>
+
         this.spigotConfig = SpigotPhaseConfig(
-            this.config.options.getOrDefault("teleportOnStart", false) as Boolean,
-            SelectionMethod.valueOf(this.config.options.getOrDefault("teleportSelectionMethod", SelectionMethod.ORDERED.name).toString()),
+            teleportMap.getOrDefault("onStart", false) as Boolean,
+            SelectionMethod.valueOf(teleportMap.getOrDefault("selectionMethod", SelectionMethod.ORDERED.name).toString()),
             worldProviderConfig
         )
     }
 
-    override fun onStart() {
+    override fun start() {
+        super.start()
+
         // Teleport players on start if requested.
         if (this.spigotConfig.teleportOnStart && this.game is SpigotGame) {
             this.game.getSpigotActors().forEach {
@@ -41,6 +53,15 @@ abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseCo
                 it.teleport(this.spigotConfig.teleportSelectionMethod, *locations)
             }
         }
+
+        this.listeners.forEach {
+            Bukkit.getPluginManager().registerEvents(it, JavaPlugin.getPlugin(NomaPlugin::class.java))
+        }
+    }
+
+    override fun stop(): ResultType {
+        this.listeners.forEach { HandlerList.unregisterAll(it) }
+        return super.stop()
     }
 
     override fun join(player: Player) {
@@ -55,5 +76,7 @@ abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseCo
 
         super.join(player)
     }
+
+    open fun getListeners() : Set<Listener> = setOf(this)
 
 }

@@ -10,11 +10,11 @@ abstract class Phase<PlayerType : Any, ResultType : Any>(protected val game: Gam
 
     private lateinit var result: ResultType
 
-    internal open fun start() {
+    open fun start() {
         this.onStart()
     }
 
-    internal open fun stop() : ResultType {
+    open fun stop() : ResultType {
         this.result = this.onStop()
         return this.getResult()
     }

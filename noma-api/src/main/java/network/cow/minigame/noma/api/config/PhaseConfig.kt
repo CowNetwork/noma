@@ -15,6 +15,6 @@ data class PhaseConfig<PlayerType : Any>(
     val options: Map<String, Any>
 )
 
-data class PhaseTimeout(val duration: Long)
+data class PhaseTimeout(val duration: Long, val silent: Boolean)
 
 data class PhaseEndCountdown(val duration: Long)

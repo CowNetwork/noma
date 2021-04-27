@@ -82,8 +82,7 @@ open class NomaGamePlugin : JavaPlugin() {
                 val countdownMap = (map["phaseEndCountdown"] ?: emptyMap<String, Any>()) as Map<*, *>
                 val countdown = PhaseEndCountdown(((countdownMap["duration"] ?: 0) as Int).toLong())
 
-                val timeoutMap = (map["timeout"] ?: emptyMap<String, Any>()) as Map<*, *>
-                val timeout = PhaseTimeout(((timeoutMap["duration"] ?: Int.MAX_VALUE) as Int).toLong())
+                val timeout = PhaseTimeout(((map["duration"] ?: Int.MAX_VALUE) as Int).toLong(), map.getOrDefault("timeoutSilently", false) as Boolean)
 
                 configs.add(PhaseConfig(
                     map["key"]?.toString() ?: error("Field 'key' is missing for phase in ${file.name}."),
@@ -128,6 +127,7 @@ open class NomaGamePlugin : JavaPlugin() {
         return GameConfig(
             config.getInt("maxPlayers", -1),
             actorProviderConfig,
+            File(".").absolutePath,
             config.getValues(false)
         )
     }

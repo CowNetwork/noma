@@ -3,7 +3,10 @@ package network.cow.minigame.noma.api
 /**
  * @author Benedikt Wüller
  */
-abstract class CountdownTimer(var duration: Long) {
+abstract class CountdownTimer(var duration: Long, baseTranslationKey: String = Translations.COUNTDOWN_MESSAGE_GENERIC_BASE) {
+
+    protected val singularTranslationKey = "$baseTranslationKey.singular"
+    protected val pluralTranslationKey = "$baseTranslationKey.plural"
 
     var onDone: () -> Unit = {}
 

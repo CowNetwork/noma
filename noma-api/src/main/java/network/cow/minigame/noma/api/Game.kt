@@ -66,15 +66,17 @@ abstract class Game<PlayerType : Any>(
         this.currentPhaseKey = key
 
         val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
-        this.switchTimer = this.createCountdownTimer(duration, currentPhase?.config?.key).onDone {
+        this.switchTimer = this.createCountdownTimer(duration, Translations.COUNTDOWN_MESSAGE_PHASE_END_BASE).onDone {
             currentPhase?.stop()
             this.onSetPhase(currentPhase, phase)
             phase.start()
 
-            this.timeoutTimer = this.createCountdownTimer(phase.config.timeout.duration).silent().onDone {
-                phase.timeout()
-                this.nextPhase()
-            }.start()
+            this.timeoutTimer = this.createCountdownTimer(phase.config.timeout.duration, Translations.COUNTDOWN_MESSAGE_PHASE_TIMEOUT_BASE)
+                .silent(phase.config.timeout.silent)
+                .onDone {
+                    phase.timeout()
+                    this.nextPhase()
+                }.start()
         }.start()
     }
 
@@ -90,7 +92,7 @@ abstract class Game<PlayerType : Any>(
         this.setPhase(key, skipCountdown)
     }
 
-    fun getPhase(key: String) = this.phases[key] ?: error("The given key does not exist for 'phases.*.key'.")
+    fun getPhase(key: String) = this.phases[key] ?: error("The phase with key '$key' does not exist for 'phases.*.key'.")
 
     fun <T : Any> getPhase(key: String, type: Class<out Phase<PlayerType, T>>) : Phase<PlayerType, T> = type.cast(this.getPhase(key))
 
@@ -98,7 +100,7 @@ abstract class Game<PlayerType : Any>(
 
     fun getPhaseResult(key: String) = this.getPhase(key).getResult()
 
-    fun getPool(key: String) = this.pools[key] ?: error("The given key does not exist for 'pools.*.key'.")
+    fun getPool(key: String) = this.pools[key] ?: error("The pool with the given key '$key' does not exist for 'pools.*.key'.")
 
     fun <T : Any> getTypedPool(key: String) = this.getPool(key) as Pool<PlayerType, T>
 
@@ -114,7 +116,7 @@ abstract class Game<PlayerType : Any>(
         val currentPhase = if (this::currentPhaseKey.isInitialized) this.getPhase(this.currentPhaseKey) else null
 
         val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
-        this.switchTimer = this.createCountdownTimer(duration, currentPhase?.config?.key).onDone {
+        this.switchTimer = this.createCountdownTimer(duration, Translations.COUNTDOWN_MESSAGE_SHUTDOWN_BASE).onDone {
             // Stop current phase
             currentPhase?.stop()
             this.onSetPhase(currentPhase, null)
@@ -149,6 +151,6 @@ abstract class Game<PlayerType : Any>(
 
     protected abstract fun onSetPhase(oldPhase: Phase<PlayerType, *>?, newPhase: Phase<PlayerType, *>?)
 
-    protected abstract fun createCountdownTimer(duration: Long, name: String? = null) : CountdownTimer
+    protected abstract fun createCountdownTimer(duration: Long, baseTranslationKey: String = Translations.COUNTDOWN_MESSAGE_GENERIC_BASE) : CountdownTimer
 
 }
