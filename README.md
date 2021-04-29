@@ -12,6 +12,6 @@ Not MinigameAPI - minigame framework for the cow network.
 - [ ] Scoreboard Helpers
 - [ ] Statistics
 - [x] Common Actor Providers
-- [ ] Common Phases
-- [ ] Common World Providers
+- [x] Common Phases
+- [x] Common World Providers
 - [ ] Full Example Plugin

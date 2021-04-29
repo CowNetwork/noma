@@ -92,7 +92,6 @@ abstract class Game<PlayerType : Any>(
                     this.updateState(this.state)
                 }
                 .start()
-
         }.start()
     }
 

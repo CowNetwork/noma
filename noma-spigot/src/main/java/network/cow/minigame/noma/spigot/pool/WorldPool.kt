@@ -58,7 +58,8 @@ class WorldPool(game: Game<Player>, config: PoolConfig<Player>) : Pool<Player, W
             path,
             globalSpawnLocations,
             actorSpawnLocations,
-            gameRules
+            gameRules,
+            config.getValues(false)
         )
     }
 
@@ -78,7 +79,8 @@ data class WorldMeta(
     val path: Path,
     val globalSpawnLocations: List<SpawnLocation>,
     val actorSpawnLocations: Map<String, List<SpawnLocation>>,
-    val gameRules: Map<GameRule<Any>, Any>
+    val gameRules: Map<GameRule<Any>, Any>,
+    val options: Map<String, Any>
 )
 
 data class SpawnLocation(val coordinates: Vector, val yaw: Float, val pitch: Float) {

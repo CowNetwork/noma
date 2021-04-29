@@ -5,6 +5,7 @@ import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.pool.Pool
 import network.cow.minigame.noma.spigot.SpigotGame
+import network.cow.minigame.noma.spigot.pool.WorldMeta
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -101,6 +102,8 @@ open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) :
         this.displayOptions()
         return true
     }
+
+    fun firstVotedItem() : T = this.getResult().items.first().item
 
     override fun onTimeout() = Unit
 
