@@ -14,6 +14,7 @@ import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.WeatherType
 import org.bukkit.block.data.BlockData
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack

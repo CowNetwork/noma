@@ -5,7 +5,9 @@ import network.cow.messages.adventure.comp
 import network.cow.messages.adventure.corporate
 import network.cow.messages.adventure.highlight
 import network.cow.messages.adventure.info
+import network.cow.messages.adventure.translate
 import network.cow.minigame.noma.api.Game
+import network.cow.minigame.noma.api.Translations
 import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.get
 import network.cow.spigot.extensions.ItemBuilder
@@ -109,7 +111,7 @@ class WorldPool(game: Game<Player>, config: PoolConfig<Player>) : SpigotPool<Wor
 
         return ItemBuilder(item.material)
             .name(item.name.corporate())
-            .lore(Component.empty(), "Builders".info(), names.info()) // TODO: translate
+            .lore(Component.empty(), Translations.POOLS_WORLD_BUILDERS.translate(player).info(), names.info())
             .build()
     }
 

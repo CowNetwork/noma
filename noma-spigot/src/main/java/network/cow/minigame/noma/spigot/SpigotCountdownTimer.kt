@@ -1,11 +1,11 @@
 package network.cow.minigame.noma.spigot
 
 import network.cow.messages.adventure.comp
-import network.cow.messages.adventure.formatToComponent
 import network.cow.messages.adventure.gradient
 import network.cow.messages.adventure.highlight
+import network.cow.messages.adventure.translate
 import network.cow.messages.core.Gradients
-import network.cow.messages.spigot.sendInfo
+import network.cow.messages.spigot.sendTranslatedInfo
 import network.cow.minigame.noma.api.CountdownTimer
 import network.cow.minigame.noma.api.Translations
 import org.bukkit.Bukkit
@@ -25,21 +25,19 @@ class SpigotCountdownTimer(duration: Long, baseTranslationKey: String = Translat
         val seconds = (secondsLeft % 60).toInt()
 
         Bukkit.getOnlinePlayers().forEach {
-            // TODO: use translations
-
             val time = when {
-                minutes == 1 -> "$minutes minute"
-                minutes > 0 -> "$minutes minutes"
-                seconds == 1 -> "$seconds second"
-                else -> "$seconds seconds"
+                minutes == 1 -> Translations.MINUTE_SINGULAR.translate(it, minutes.toString())
+                minutes > 0 -> Translations.MINUTE_PLURAL.translate(it, minutes.toString())
+                seconds == 1 -> Translations.SECOND_SINGULAR.translate(it, seconds.toString())
+                else -> Translations.SECOND_PLURAL.translate(it, seconds.toString())
             }.highlight()
 
             val format = when {
-                minutes == 1 || (minutes == 0 && seconds == 1) -> "There is %1\$s left"
-                else -> "There are %1\$s left"
+                minutes == 1 || (minutes == 0 && seconds == 1) -> this.singularTranslationKey
+                else -> this.pluralTranslationKey
             }
 
-            it.sendInfo(format.formatToComponent(time), "Countdown".comp().gradient(Gradients.MINIGAME))
+            it.sendTranslatedInfo(format, time, prefix = "Countdown".gradient(Gradients.MINIGAME))
         }
     }
 

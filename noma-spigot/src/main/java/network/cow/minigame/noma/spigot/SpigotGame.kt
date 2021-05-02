@@ -1,15 +1,15 @@
 package network.cow.minigame.noma.spigot
 
-import network.cow.messages.adventure.formatToComponent
 import network.cow.messages.adventure.gradient
 import network.cow.messages.adventure.highlight
-import network.cow.messages.adventure.info
 import network.cow.messages.adventure.prefix
 import network.cow.messages.core.Gradients
 import network.cow.messages.spigot.MessagesPlugin
+import network.cow.messages.spigot.broadcastTranslatedInfo
 import network.cow.minigame.noma.api.CountdownTimer
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.SelectionMethod
+import network.cow.minigame.noma.api.Translations
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PoolConfig
@@ -93,23 +93,20 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         val method = if (phase is SpigotPhase) phase.spigotConfig.teleportSelectionMethod else SelectionMethod.ORDERED
         player.teleport(this.worldProvider.getSpawnLocation(this.getSpigotActor(player), method))
 
-        // TODO: use translations
-        event.joinMessage("%1\$s joined the game.".formatToComponent(
-            player.displayName().highlight()
-        ).info().prefix(MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)))
+        event.joinMessage(null)
+
+        val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
+        Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_JOINED, player.displayName().highlight(), prefix = prefix)
     }
 
     @EventHandler
     private fun onPlayerLeave(event: PlayerQuitEvent) {
         val player = event.player
+        event.quitMessage(null)
 
         if (this.getSpigotActor(player) != null) {
-            // TODO: use translations
-            event.quitMessage("%1\$s left the game.".formatToComponent(
-                player.displayName().highlight()
-            ).info().prefix(MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)))
-        } else {
-            event.quitMessage(null)
+            val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
+            Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_LEFT, player.displayName().highlight(), prefix = prefix)
         }
 
         this.actorProvider.removePlayer(player)

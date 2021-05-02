@@ -1,21 +1,24 @@
 package network.cow.minigame.noma.spigot.phase
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import network.cow.messages.adventure.CascadeType
 import network.cow.messages.adventure.cascadeColor
 import network.cow.messages.adventure.comp
 import network.cow.messages.adventure.corporate
-import network.cow.messages.adventure.formatToComponent
+import network.cow.messages.adventure.translateToComponent
+import network.cow.messages.adventure.translate
 import network.cow.messages.adventure.highlight
 import network.cow.messages.adventure.gradient
 import network.cow.messages.adventure.info
 import network.cow.messages.adventure.prefix
 import network.cow.messages.core.Gradients
-import network.cow.messages.spigot.sendError
+import network.cow.messages.spigot.sendTranslatedError
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.SelectionMethod
+import network.cow.minigame.noma.api.Translations
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.pool.Pool
 import network.cow.minigame.noma.spigot.NomaPlugin
@@ -34,13 +37,12 @@ import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
+import java.awt.Color
 
 /**
  * @author Benedikt Wüller
  */
 open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, config) {
-
-    // TODO: translation
 
     companion object {
         private const val STATE_KEY_VOTE_ITEM = "vote_phase_item"
@@ -87,18 +89,21 @@ open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) :
     fun getVotes(item: String) : Int = this.getVotes(this.items.indexOf(item))
 
     fun updateVoteItem(player: Player) {
-        // TODO: use translations
-
         val name = this.pool.config.options.getOrDefault("name", this.pool.config.key).toString()
         val votesLeft = this.votesPerPlayer - votes.getOrPut(player) { mutableListOf() }.size
 
         val currentItem = player.getState<ItemStack>(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM)
-        currentItem?.let { player.inventory.removeItem(currentItem) }
+        currentItem?.let { player.inventory.removeItem(it) }
 
-        val nameComponent = name.highlight().prefix("Voting".gradient(Gradients.MINIGAME)).decoration(TextDecoration.ITALIC, false)
+        val prefix = Translations.PHASE_VOTE_TITLE.translate(player).gradient(Gradients.MINIGAME) as TextComponent
+        val nameComponent = name.translate(player).highlight().prefix(prefix).decoration(TextDecoration.ITALIC, false)
         val item = ItemBuilder(Material.NAME_TAG)
             .name(nameComponent)
-            .lore("Votes left: %1\$s/%2\$s".formatToComponent(votesLeft.toString().highlight(), this.votesPerPlayer.toString().comp()).info().decoration(TextDecoration.ITALIC, false))
+            .lore(Translations.PHASE_VOTE_VOTES_LEFT.translateToComponent(
+                player,
+                votesLeft.toString().highlight(),
+                this.votesPerPlayer.toString().comp()).info().decoration(TextDecoration.ITALIC, false)
+            )
             .build()
 
         player.setState(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM, item)
@@ -115,6 +120,13 @@ open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) :
         // Return the items with the most votes.
         val votes = mutableMapOf<String, Int>()
         this.items.forEachIndexed { index, item -> votes[item] = this.getVotes(index) }
+
+        this.game.getPlayers().forEach { player ->
+            val currentItem = player.getState<ItemStack>(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM)
+            currentItem?.let { player.inventory.removeItem(it) }
+            player.clearState(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM)
+            player.closeInventory()
+        }
 
         this.storeMiddleware.store(this.config.key, Result(votes.keys
             .map { ResultItem(it, this.pool.getItem(it), votes[it] ?: 0) }
@@ -158,20 +170,20 @@ open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) :
 
             val isVoted = this@VotePhase.votes[player]?.contains(itemIndex) == true
 
-            val votesComponent = "Votes: %1\$s".formatToComponent(votes.toString().highlight()).info()
+            val votesComponent = Translations.PHASE_VOTE_VOTES.translateToComponent(player, votes.toString().highlight()).info()
 
             if (isVoted) {
                 builder.glow()
                 builder.lore(
                     votesComponent,
                     Component.empty(),
-                    "Click to remove your vote.".info()
+                    Translations.PHASE_VOTE_CLICK_TO_UNVOTE.translateToComponent(player).info()
                 )
             } else {
                 builder.lore(
                     votesComponent,
                     Component.empty(),
-                    "Click to vote.".info()
+                    Translations.PHASE_VOTE_CLICK_TO_VOTE.translateToComponent(player).info()
                 )
             }
 
@@ -185,7 +197,7 @@ open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) :
                 }
 
                 if (playerVotes.size >= this@VotePhase.votesPerPlayer) {
-                    player.sendError("You don't have any votes left.")
+                    player.sendTranslatedError(Translations.PHASE_VOTE_NO_VOTES_LEFT)
                     return@withAction false
                 }
 
