@@ -5,11 +5,14 @@ import network.cow.minigame.noma.api.actor.ActorProvider
 import network.cow.minigame.noma.api.config.ActorProviderConfig
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
-import network.cow.minigame.noma.api.config.PhaseEndCountdown
-import network.cow.minigame.noma.api.config.PhaseTimeout
+import network.cow.minigame.noma.api.config.PhaseEndCountdownConfig
+import network.cow.minigame.noma.api.config.PhaseTimeoutConfig
 import network.cow.minigame.noma.api.config.PoolConfig
+import network.cow.minigame.noma.api.config.StoreMiddlewareConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.api.pool.Pool
+import network.cow.minigame.noma.api.state.DefaultStoreMiddleware
+import network.cow.minigame.noma.api.state.StoreMiddleware
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -80,16 +83,25 @@ open class NomaGamePlugin : JavaPlugin() {
                 val map = it as Map<String, Any>
 
                 val countdownMap = (map["phaseEndCountdown"] ?: emptyMap<String, Any>()) as Map<*, *>
-                val countdown = PhaseEndCountdown(((countdownMap["duration"] ?: 0) as Int).toLong())
+                val countdown = PhaseEndCountdownConfig(((countdownMap["duration"] ?: 0) as Int).toLong())
 
-                val timeout = PhaseTimeout(((map["duration"] ?: Int.MAX_VALUE) as Int).toLong(), map.getOrDefault("timeoutSilently", false) as Boolean)
+                val timeout = PhaseTimeoutConfig(((map["duration"] ?: Int.MAX_VALUE) as Int).toLong(), map.getOrDefault("timeoutSilently", false) as Boolean)
+
+                val storeMiddlewareMap = (map["storeMiddleware"] ?: emptyMap<String, Any>()) as Map<String, Any>
+                val storeMiddlewareConfig = StoreMiddlewareConfig(
+                    storeMiddlewareMap["kind"]?.toString()?.let { Class.forName(it) as Class<out StoreMiddleware> } ?: DefaultStoreMiddleware::class.java,
+                    storeMiddlewareMap
+                )
 
                 configs.add(PhaseConfig(
                     map["key"]?.toString() ?: error("Field 'key' is missing for phase in ${file.name}."),
-                    Class.forName(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")) as Class<out Phase<Player, *>>,
+                    Class.forName(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")) as Class<out Phase<Player>>,
                     (map["allowsNewPlayers"] ?: false) as Boolean,
                     (map["requiresActors"] ?: true) as Boolean,
-                    countdown, timeout, map
+                    countdown,
+                    timeout,
+                    storeMiddlewareConfig,
+                    map
                 ))
             }
         }

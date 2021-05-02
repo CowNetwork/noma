@@ -3,7 +3,7 @@ main: network.cow.minigame.noma.spigot.NomaPlugin
 version: 1.0.0
 api-version: 1.16
 author: Benedikt Wüller
-
-commands:
-  vote:
-    description: Used for voting during a vote phase.
+depend:
+  - SpigotExtensions
+  - InventoryDsl
+  - Messages

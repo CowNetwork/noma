@@ -2,26 +2,30 @@ package network.cow.minigame.noma.api.phase
 
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
+import network.cow.minigame.noma.api.config.StoreMiddlewareConfig
+import network.cow.minigame.noma.api.state.Store
+import network.cow.minigame.noma.api.state.StoreMiddleware
 
 /**
  * @author Benedikt Wüller
  */
-abstract class Phase<PlayerType : Any, ResultType : Any>(protected val game: Game<PlayerType>, val config: PhaseConfig<PlayerType>) {
+abstract class Phase<PlayerType : Any>(protected val game: Game<PlayerType>, val config: PhaseConfig<PlayerType>) {
 
-    private lateinit var result: ResultType
+    protected val storeMiddleware: StoreMiddleware = this.config.storeMiddleware.kind
+        .getDeclaredConstructor(Phase::class.java, Store::class.java, StoreMiddlewareConfig::class.java)
+        .newInstance(this, this.game.store, this.config.storeMiddleware)
 
     open fun start() {
         this.onStart()
     }
 
-    open fun stop() : ResultType {
-        this.result = this.onStop()
-        return this.getResult()
+    open fun stop() {
+        this.onStop()
     }
 
-    open fun timeout() : ResultType {
+    open fun timeout() {
         this.onTimeout()
-        return this.stop()
+        this.stop()
     }
 
     open fun join(player: PlayerType) {
@@ -36,15 +40,10 @@ abstract class Phase<PlayerType : Any, ResultType : Any>(protected val game: Gam
 
     protected abstract fun onTimeout()
 
-    protected abstract fun onStop() : ResultType
+    protected abstract fun onStop()
 
     protected abstract fun onPlayerJoin(player: PlayerType)
 
     protected abstract fun onPlayerLeave(player: PlayerType)
-
-    open fun getResult() : ResultType {
-        if (!this::result.isInitialized) error("This phase (${this.config.key}) has not been completed yet.")
-        return this.result
-    }
 
 }

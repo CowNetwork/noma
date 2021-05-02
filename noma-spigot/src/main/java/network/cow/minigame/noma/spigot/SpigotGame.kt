@@ -48,7 +48,7 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         Bukkit.shutdown()
     }
 
-    override fun onSetPhase(oldPhase: Phase<Player, *>?, newPhase: Phase<Player, *>?) {
+    override fun onSetPhase(oldPhase: Phase<Player>?, newPhase: Phase<Player>?) {
         if (newPhase !is SpigotPhase) return
         val config = newPhase.spigotConfig.worldProvider
         this.worldProvider = config.kind.getDeclaredConstructor(SpigotGame::class.java, WorldProviderConfig::class.java).newInstance(this, config)

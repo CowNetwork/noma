@@ -14,22 +14,24 @@ import java.util.UUID
 /**
  * @author Benedikt Wüller
  */
-class VotedWorldProvider(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
+class StoreWorldProvider(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
 
-    private val votePhase: VotePhase<WorldMeta>
+    private val storeKey = this.config.options["storeKey"]?.toString() ?: error("No store key has been defined for 'phases.*.worldProvider.storeKey'.")
+
     private lateinit var worldMeta: WorldMeta
     private lateinit var world: World
 
-    init {
-        val votePhaseKey = this.config.options["fromPhase"]?.toString() ?: error("No phase key has been defined in 'phases.*.worldProvider.fromPhase'.")
-        val phase = this.game.getPhase(votePhaseKey)
-
-        if (phase !is VotePhase<*>) error("The phase '$votePhaseKey' (defined in 'phases.*.worldProvider.fromPhase') is not of type ${VotePhase::class.java.name}.")
-        this.votePhase = this.game.getPhase(votePhaseKey) as VotePhase<WorldMeta>
-    }
-
     override fun selectWorld(): World {
-        this.worldMeta = this.votePhase.getResult().items.first().item
+        val value = this.game.store.get<Any>(storeKey) ?: TODO("error")
+        this.worldMeta = when (value) {
+            is WorldMeta -> value
+            is VotePhase.Result<*> -> {
+                val item = value.items.firstOrNull()?.value ?: TODO("error")
+                if (item !is WorldMeta) TODO("error")
+                item
+            }
+            else -> TODO("error")
+        }
 
         val targetName = UUID.randomUUID().toString()
         worldMeta.path.toFile().copyRecursively(Paths.get(this.game.config.workingDirectory, targetName).toFile(), overwrite = true)

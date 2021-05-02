@@ -8,6 +8,7 @@ import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.api.pool.Pool
+import network.cow.minigame.noma.api.state.Store
 
 /**
  * @author Benedikt Wüller
@@ -20,7 +21,7 @@ abstract class Game<PlayerType : Any>(
 
     private val actors = mutableMapOf<String, Actor<PlayerType>>()
 
-    private val phases = LinkedHashMap<String, Phase<PlayerType, *>>()
+    private val phases = LinkedHashMap<String, Phase<PlayerType>>()
     private lateinit var currentPhaseKey: String
 
     private val pools = mutableMapOf<String, Pool<PlayerType, *>>()
@@ -35,6 +36,8 @@ abstract class Game<PlayerType : Any>(
     val actorProvider: ActorProvider<PlayerType> = this.config.actorProvider.kind
         .getDeclaredConstructor(Game::class.java, ActorProviderConfig::class.java)
         .newInstance(this, this.config.actorProvider)
+
+    val store: Store = Store()
 
     init {
         if (this.phaseConfigs.isEmpty()) error("There must be at least one phase configured.")
@@ -109,17 +112,11 @@ abstract class Game<PlayerType : Any>(
 
     fun getPhase(key: String) = this.phases[key] ?: error("The phase with key '$key' does not exist for 'phases.*.key'.")
 
-    fun <T : Any> getPhase(key: String, type: Class<out Phase<PlayerType, T>>) : Phase<PlayerType, T> = type.cast(this.getPhase(key))
-
     fun getCurrentPhase() = this.getPhase(this.currentPhaseKey)
-
-    fun getPhaseResult(key: String) = this.getPhase(key).getResult()
 
     fun getPool(key: String) = this.pools[key] ?: error("The pool with the given key '$key' does not exist for 'pools.*.key'.")
 
     fun <T : Any> getTypedPool(key: String) = this.getPool(key) as Pool<PlayerType, T>
-
-    fun <T : Any> getPhaseResult(key: String, type: Class<out Phase<PlayerType, T>>) : T = this.getPhase(key, type).getResult()
 
     fun stop(skipCountdown: Boolean = false) {
         if (this.isStopping) return
@@ -166,7 +163,7 @@ abstract class Game<PlayerType : Any>(
 
     protected abstract fun onStop()
 
-    protected abstract fun onSetPhase(oldPhase: Phase<PlayerType, *>?, newPhase: Phase<PlayerType, *>?)
+    protected abstract fun onSetPhase(oldPhase: Phase<PlayerType>?, newPhase: Phase<PlayerType>?)
 
     protected abstract fun createCountdownTimer(duration: Long, baseTranslationKey: String = Translations.COUNTDOWN_MESSAGE_GENERIC_BASE) : CountdownTimer
 

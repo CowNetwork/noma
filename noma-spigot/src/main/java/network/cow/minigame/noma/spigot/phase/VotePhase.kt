@@ -1,26 +1,53 @@
 package network.cow.minigame.noma.spigot.phase
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
+import network.cow.messages.adventure.CascadeType
+import network.cow.messages.adventure.cascadeColor
+import network.cow.messages.adventure.comp
+import network.cow.messages.adventure.corporate
+import network.cow.messages.adventure.formatToComponent
+import network.cow.messages.adventure.highlight
+import network.cow.messages.adventure.gradient
+import network.cow.messages.adventure.info
+import network.cow.messages.adventure.prefix
+import network.cow.messages.core.Gradients
+import network.cow.messages.spigot.sendError
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.pool.Pool
-import network.cow.minigame.noma.spigot.SpigotGame
-import network.cow.minigame.noma.spigot.pool.WorldMeta
-import org.bukkit.Bukkit
-import org.bukkit.command.Command
-import org.bukkit.command.CommandExecutor
-import org.bukkit.command.CommandSender
+import network.cow.minigame.noma.spigot.NomaPlugin
+import network.cow.minigame.noma.spigot.pool.SpigotPool
+import network.cow.spigot.extensions.ItemBuilder
+import network.cow.spigot.extensions.state.clearState
+import network.cow.spigot.extensions.state.getState
+import network.cow.spigot.extensions.state.setState
+import network.cow.spigot.inventory.InventoryItem
+import network.cow.spigot.inventory.InventoryMenu
+import network.cow.spigot.inventory.PagedInventoryMenu
+import network.cow.spigot.inventory.withAction
+import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.event.Event
+import org.bukkit.event.EventHandler
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.ItemStack
 
 /**
  * @author Benedikt Wüller
  */
-open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase<VotePhase.Result<T>>(game, config), CommandExecutor {
+open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, config) {
 
-    // TODO: rework with inventory or frame interface.
     // TODO: translation
 
-    private val votes = mutableMapOf<Player, List<Int>>()
+    companion object {
+        private const val STATE_KEY_VOTE_ITEM = "vote_phase_item"
+    }
+
+    private val votes = mutableMapOf<Player, MutableList<Int>>()
+    private val inventories = mutableMapOf<Player, InventoryMenu>()
 
     private val pool: Pool<Player, T>
 
@@ -37,78 +64,138 @@ open class VotePhase<T : Any>(game: Game<Player>, config: PhaseConfig<Player>) :
             SelectionMethod.RANDOM -> this.pool.getKeys().shuffled()
             SelectionMethod.ORDERED -> this.pool.getKeys()
         }.take(this.options).sorted()
-
-        Bukkit.getPluginCommand("vote")?.setExecutor(this)
     }
 
     override fun onStart() {
-        this.displayOptions()
+        this.game.getPlayers().forEach(this::updateVoteItem)
     }
 
     override fun onPlayerJoin(player: Player) {
-        this.displayOptions()
+        this.updateVoteItem(player)
     }
 
     override fun onPlayerLeave(player: Player) {
+        val currentItem = player.getState<ItemStack>(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM)
+        currentItem?.let { player.inventory.removeItem(currentItem) }
+        player.clearState(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM)
         this.votes.remove(player)
+        this.inventories.remove(player)
     }
 
     fun getVotes(index: Int) : Int = this.votes.count { index in it.value }
 
     fun getVotes(item: String) : Int = this.getVotes(this.items.indexOf(item))
 
-    open fun displayOptions() {
-        if (this.game !is SpigotGame) return
-        this.game.getSpigotActors().forEach {
-            it.sendMessage("You have ${this.votesPerPlayer} votes.")
-            this.items.forEachIndexed { index, item -> it.sendMessage("${index + 1}. $item (votes: ${this.getVotes(index)})") }
-            it.sendMessage("Use /vote <number> or /vote <number,number,...>")
+    fun updateVoteItem(player: Player) {
+        // TODO: use translations
+
+        val name = this.pool.config.options.getOrDefault("name", this.pool.config.key).toString()
+        val votesLeft = this.votesPerPlayer - votes.getOrPut(player) { mutableListOf() }.size
+
+        val currentItem = player.getState<ItemStack>(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM)
+        currentItem?.let { player.inventory.removeItem(currentItem) }
+
+        val nameComponent = name.highlight().prefix("Voting".gradient(Gradients.MINIGAME)).decoration(TextDecoration.ITALIC, false)
+        val item = ItemBuilder(Material.NAME_TAG)
+            .name(nameComponent)
+            .lore("Votes left: %1\$s/%2\$s".formatToComponent(votesLeft.toString().highlight(), this.votesPerPlayer.toString().comp()).info().decoration(TextDecoration.ITALIC, false))
+            .build()
+
+        player.setState(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM, item)
+        player.inventory.addItem(item)
+
+        this.inventories.getOrPut(player) {
+            VoteInventoryMenu(player, nameComponent.cascadeColor(NamedTextColor.DARK_GRAY, CascadeType.DEEP_ALL))
+        }.update {
+            item(4, item)
         }
     }
 
-    protected fun vote(player: Player, vararg votes: Int) {
-        votes.forEach {
-            if (it >= 0 && it <= this.items.lastIndex) return@forEach
-            throw IndexOutOfBoundsException("The vote $it is out of bounds.")
-        }
-        this.votes[player] = votes.take(this.votesPerPlayer)
-    }
-
-    override fun onStop(): Result<T> {
+    override fun onStop() {
         // Return the items with the most votes.
         val votes = mutableMapOf<String, Int>()
         this.items.forEachIndexed { index, item -> votes[item] = this.getVotes(index) }
 
-        return Result(votes.keys
+        this.storeMiddleware.store(this.config.key, Result(votes.keys
             .map { ResultItem(it, this.pool.getItem(it), votes[it] ?: 0) }
             .shuffled()
             .sortedByDescending { it.votes }
-            .take(this.options))
+            .take(this.options)))
     }
-
-    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender !is Player) {
-            sender.sendMessage("Nope")
-            return true
-        }
-
-        if (args.size != 1) {
-            sender.sendMessage("Use /vote <number> or /vote <number,number,...>")
-            return true
-        }
-
-        val numbers = args.first().split(",").mapNotNull { it.toIntOrNull() }.toIntArray()
-        this.vote(sender, *numbers)
-        this.displayOptions()
-        return true
-    }
-
-    fun firstVotedItem() : T = this.getResult().items.first().item
 
     override fun onTimeout() = Unit
 
+    @EventHandler
+    private fun onPlayerInteract(event: PlayerInteractEvent) {
+        val player = event.player
+
+        val item = player.getState<ItemStack>(NomaPlugin::class.java, STATE_KEY_VOTE_ITEM) ?: return
+        println(player.inventory.itemInMainHand.isSimilar(item))
+        if (!player.inventory.itemInMainHand.isSimilar(item)) return
+
+        this.inventories[player]?.open()
+        event.setUseItemInHand(Event.Result.DENY)
+    }
+
     data class Result<T>(val items: List<ResultItem<T>>)
 
-    data class ResultItem<T>(val key: String, val item: T, val votes: Int)
+    data class ResultItem<T>(val key: String, val value: T, val votes: Int)
+
+    inner class VoteInventoryMenu(owner: Player, title: Component) : PagedInventoryMenu(owner, 5 * 9, title) {
+
+        override fun getItemCount(): Int = minOf(this@VotePhase.options, this@VotePhase.items.size)
+
+        override fun getItem(player: Player, index: Int): InventoryItem {
+            val item = this@VotePhase.items[index]
+            val builder = when (val pool = this@VotePhase.pool) {
+                is SpigotPool<*> -> ItemBuilder(pool.getDisplayItem(player, item))
+                else -> ItemBuilder(Material.PAPER).name(item.corporate())
+            }
+
+            val itemIndex = this@VotePhase.items.indexOf(item)
+            val votes = this@VotePhase.getVotes(itemIndex)
+            builder.amount(maxOf(votes, 1))
+
+            val isVoted = this@VotePhase.votes[player]?.contains(itemIndex) == true
+
+            val votesComponent = "Votes: %1\$s".formatToComponent(votes.toString().highlight()).info()
+
+            if (isVoted) {
+                builder.glow()
+                builder.lore(
+                    votesComponent,
+                    Component.empty(),
+                    "Click to remove your vote.".info()
+                )
+            } else {
+                builder.lore(
+                    votesComponent,
+                    Component.empty(),
+                    "Click to vote.".info()
+                )
+            }
+
+            return builder.build().withAction { _, _ ->
+                val playerVotes = this@VotePhase.votes.getOrPut(player) { mutableListOf() }
+                if (isVoted) {
+                    playerVotes.remove(itemIndex)
+                    updateItem(index)
+                    updateVoteItem(player)
+                    return@withAction true
+                }
+
+                if (playerVotes.size >= this@VotePhase.votesPerPlayer) {
+                    player.sendError("You don't have any votes left.")
+                    return@withAction false
+                }
+
+                playerVotes.add(itemIndex)
+                updateItem(index)
+                updateVoteItem(player)
+                return@withAction true
+            }
+        }
+
+    }
 
 }

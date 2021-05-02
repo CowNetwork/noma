@@ -1,14 +1,21 @@
 package network.cow.minigame.noma.spigot.pool
 
+import net.kyori.adventure.text.Component
+import network.cow.messages.adventure.comp
+import network.cow.messages.adventure.corporate
+import network.cow.messages.adventure.highlight
+import network.cow.messages.adventure.info
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.get
-import network.cow.minigame.noma.api.pool.Pool
+import network.cow.spigot.extensions.ItemBuilder
 import org.bukkit.GameRule
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.World
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 import java.nio.file.Files
 import java.nio.file.Path
@@ -17,7 +24,7 @@ import java.nio.file.Paths
 /**
  * @author Benedikt Wüller
  */
-class WorldPool(game: Game<Player>, config: PoolConfig<Player>) : Pool<Player, WorldMeta>(game, config) {
+class WorldPool(game: Game<Player>, config: PoolConfig<Player>) : SpigotPool<WorldMeta>(game, config) {
 
     private val maps = mutableMapOf<String, WorldMeta>()
     private val relativeConfigPath = this.config.options.get("relativeConfigLocation", "mapconfig.yml")
@@ -42,7 +49,7 @@ class WorldPool(game: Game<Player>, config: PoolConfig<Player>) : Pool<Player, W
         val actorSpawnLocations = mutableMapOf<String, List<SpawnLocation>>()
         (config.getList("actorSpawns", emptyList<Map<String, Any>>()) as List<Map<String, Any>>).forEach {
             val key = it["actorKey"]?.toString() ?: error("") // TODO
-            actorSpawnLocations[key] = it.get<List<Map<String, Any>>>("spawns", emptyList()).map(this::readLocation)
+            actorSpawnLocations[key] = it.get<List<Any>>("spawns", emptyList()).map(this::readLocation)
         }
 
         val gameRuleSection = config.getConfigurationSection("gameRules")
@@ -54,8 +61,15 @@ class WorldPool(game: Game<Player>, config: PoolConfig<Player>) : Pool<Player, W
             gameRules[gameRule] = value
         }
 
+        val name = config.getString("name", path.fileName.toString())!!
+        val authors = config.getString("authors", "-")?.split(",") ?: emptyList()
+        val material = config.getString("material")?.let { Material.valueOf(it) } ?: Material.STONE
+
         return WorldMeta(
             path,
+            name,
+            authors,
+            material,
             globalSpawnLocations,
             actorSpawnLocations,
             gameRules,
@@ -63,20 +77,49 @@ class WorldPool(game: Game<Player>, config: PoolConfig<Player>) : Pool<Player, W
         )
     }
 
-    private fun readLocation(map: Map<String, Any>) = SpawnLocation(
-        Vector(
-            map.get("x", 0.0),
-            map.get("y", 0.0),
-            map.get("z", 0.0)
-        ),
-        map.get("yaw", 0.0F),
-        map.get("pitch", 0.0F)
-    )
+    private fun readLocation(obj: Any) : SpawnLocation {
+        return when (obj) {
+            is Map<*, *> -> {
+                val map = obj as Map<String, Any>
+                SpawnLocation(
+                    Vector(
+                        map.get("x", 0.0),
+                        map.get("y", 0.0),
+                        map.get("z", 0.0)
+                    ),
+                    map.get("yaw", 0.0F),
+                    map.get("pitch", 0.0F)
+                )
+            }
+            is String -> TODO("read from string")
+            else -> TODO("error")
+        }
+    }
+
+    override fun getDisplayItem(player: Player, key: String): ItemStack {
+        val item = this.getItem(key)
+
+        var names = Component.empty()
+        (item.authors).forEachIndexed { index, author ->
+            names = names.append(author.highlight())
+            if (index != item.authors.lastIndex) {
+                names = names.append(", ".comp())
+            }
+        }
+
+        return ItemBuilder(item.material)
+            .name(item.name.corporate())
+            .lore(Component.empty(), "Builders".info(), names.info()) // TODO: translate
+            .build()
+    }
 
 }
 
 data class WorldMeta(
     val path: Path,
+    val name: String,
+    val authors: List<String>,
+    val material: Material,
     val globalSpawnLocations: List<SpawnLocation>,
     val actorSpawnLocations: Map<String, List<SpawnLocation>>,
     val gameRules: Map<GameRule<Any>, Any>,

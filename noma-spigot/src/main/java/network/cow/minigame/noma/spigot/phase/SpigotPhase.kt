@@ -20,8 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin
 /**
  * @author Benedikt Wüller
  */
-abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseConfig<Player>)
-    : Phase<Player, ResultType>(game, config), Listener {
+abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Phase<Player>(game, config), Listener {
 
     private val listeners = this.getListeners()
 
@@ -59,9 +58,9 @@ abstract class SpigotPhase<ResultType : Any>(game: Game<Player>, config: PhaseCo
         }
     }
 
-    override fun stop(): ResultType {
+    override fun stop() {
         this.listeners.forEach { HandlerList.unregisterAll(it) }
-        return super.stop()
+        super.stop()
     }
 
     override fun join(player: Player) {

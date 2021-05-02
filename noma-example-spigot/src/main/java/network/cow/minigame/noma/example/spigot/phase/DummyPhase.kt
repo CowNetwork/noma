@@ -5,7 +5,6 @@ import network.cow.messages.adventure.highlight
 import network.cow.messages.spigot.broadcastInfo
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
-import network.cow.minigame.noma.api.phase.EmptyPhaseResult
 import network.cow.minigame.noma.spigot.phase.SpigotPhase
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -13,7 +12,7 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-class DummyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase<EmptyPhaseResult>(game, config) {
+class DummyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, config) {
 
     override fun onStart() {
         println("phase onStart")
@@ -23,9 +22,8 @@ class DummyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase<
         println("phase onTimeout")
     }
 
-    override fun onStop(): EmptyPhaseResult {
+    override fun onStop() {
         println("phase onStop")
-        return EmptyPhaseResult()
     }
 
     override fun onPlayerJoin(player: Player) {
