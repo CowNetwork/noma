@@ -32,12 +32,6 @@
             <artifactId>noma-api</artifactId>
             <version>1.0.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>network.cow.messages</groupId>-->
-<!--            <artifactId>messages-adventure</artifactId>-->
-<!--            <version>1.0.0</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>network.cow.messages</groupId>
             <artifactId>messages-spigot</artifactId>

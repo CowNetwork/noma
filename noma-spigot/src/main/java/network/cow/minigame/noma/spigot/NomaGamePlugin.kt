@@ -137,6 +137,7 @@ open class NomaGamePlugin : JavaPlugin() {
         )
 
         return GameConfig(
+            config.getInt("minPlayers", 1),
             config.getInt("maxPlayers", -1),
             actorProviderConfig,
             File(".").absolutePath,
