@@ -14,5 +14,6 @@ object SpigotTranslations {
 
     const val PHASE_LOBBY_WAITING_FOR_PLAYER = "minigame.phase.lobby.waiting_for_players.singular"
     const val PHASE_LOBBY_WAITING_FOR_PLAYERS = "minigame.phase.lobby.waiting_for_players.plural"
+    const val PHASE_LOBBY_FULL = "minigame.phase.lobby.full"
 
 }

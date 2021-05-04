@@ -1,6 +1,8 @@
 package network.cow.minigame.noma.spigot.phase
 
 import net.kyori.adventure.text.Component
+import network.cow.messages.adventure.error
+import network.cow.messages.adventure.translateToComponent
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.phase.Phase
@@ -8,6 +10,7 @@ import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.spigot.NomaPlugin
 import network.cow.minigame.noma.spigot.SpigotActor
 import network.cow.minigame.noma.spigot.SpigotGame
+import network.cow.minigame.noma.spigot.SpigotTranslations
 import network.cow.minigame.noma.spigot.config.SpigotPhaseConfig
 import network.cow.minigame.noma.spigot.config.WorldProviderConfig
 import network.cow.minigame.noma.spigot.world.DefaultWorldProvider
@@ -74,8 +77,8 @@ abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Ph
     }
 
     override fun join(player: Player) {
-        if (player.gameMode == GameMode.SPECTATOR && !this.spigotConfig.allowSpectators) {
-            player.kick(Component.text("TODO")) // TODO
+        if (!this.spigotConfig.allowSpectators && Bukkit.getOnlinePlayers().size > this.game.config.maxPlayers) {
+            player.kick(SpigotTranslations.PHASE_LOBBY_FULL.translateToComponent(player).error())
             return
         }
 
