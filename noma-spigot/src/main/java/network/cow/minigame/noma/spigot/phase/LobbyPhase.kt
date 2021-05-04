@@ -17,7 +17,7 @@ import org.bukkit.entity.Player
 open class LobbyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, PhaseConfig(
     config.key, config.kind, allowsNewPlayers = true, requiresActors = false,
     config.phaseEndCountdown, PhaseTimeoutConfig(Long.MAX_VALUE, true),
-    config.storeMiddleware, config.options
+    config.storeMiddleware, config.options.toMutableMap().apply { this["allowsSpectators"] = false }
 )) {
 
     private val timeoutCountdown = this.createLobbyTimeoutCountdown(this.game, this::tick)
