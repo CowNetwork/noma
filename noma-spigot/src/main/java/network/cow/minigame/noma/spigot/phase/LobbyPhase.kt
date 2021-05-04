@@ -22,7 +22,9 @@ class LobbyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(
 
     private val timeoutCountdown = this.createLobbyTimeoutCountdown(this.game, this::tick)
 
-    private val startCountdown = SpigotCountdownTimer(this.config.phaseEndCountdown.duration, Translations.COUNTDOWN_MESSAGE_GAME_START).onDone(this::stop)
+    private val startCountdown = SpigotCountdownTimer(this.config.phaseEndCountdown.duration, Translations.COUNTDOWN_MESSAGE_GAME_START)
+            .onDone { this.game.nextPhase(true) }
+            .onTick { this.tick() }
 
     private fun tick() {
         val playerCount = Bukkit.getOnlinePlayers().size

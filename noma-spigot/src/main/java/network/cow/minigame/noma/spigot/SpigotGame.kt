@@ -104,13 +104,12 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         val player = event.player
         event.quitMessage(null)
 
-        if (this.getSpigotActor(player) != null) {
-            val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
-            Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_LEFT, player.displayName().highlight(), prefix = prefix)
-        }
-
         this.actorProvider.removePlayer(player)
         this.getCurrentPhase().leave(player)
+
+        if (player.gameMode == GameMode.SPECTATOR) return
+        val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
+        Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_LEFT, player.displayName().highlight(), prefix = prefix)
     }
 
 }

@@ -35,6 +35,7 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import java.util.UUID
@@ -46,6 +47,8 @@ import java.util.UUID
 private const val STATE_KEY_VOTE_ITEM_PREFIX = "vote_phase_item"
 
 open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, config) {
+
+    private val interactListener = InteractListener()
 
     private val voteables: List<Voteable<*>>
 
@@ -60,8 +63,9 @@ open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPh
             val selectionMethod = SelectionMethod.valueOf(map.getOrDefault("optionSelectionMethod", SelectionMethod.RANDOM.name).toString())
 
             val storeKey = map.getOrDefault("storeKey", "${this.config.key}.$poolKey").toString()
+            val slot = map.getOrDefault("slot", -1) as Int
 
-            Voteable(pool, votesPerPlayer, options, selectionMethod, storeKey)
+            Voteable(pool, votesPerPlayer, options, selectionMethod, storeKey, slot)
         }
     }
 
@@ -99,15 +103,19 @@ open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPh
 
     override fun onTimeout() = Unit
 
-    @EventHandler
-    private fun onPlayerInteract(event: PlayerInteractEvent) {
-        val player = event.player
-        this.voteables.forEach {
-            val itemKey = "$STATE_KEY_VOTE_ITEM_PREFIX.${it.id}"
-            val item = player.getState<ItemStack>(NomaPlugin::class.java, itemKey) ?: return@forEach
-            if (!player.inventory.itemInMainHand.isSimilar(item)) return@forEach
-            it.inventories[player]?.open()
-            event.setUseItemInHand(Event.Result.DENY)
+    override fun getListeners(): Set<Listener> = setOf(this.interactListener)
+
+    inner class InteractListener : Listener {
+        @EventHandler
+        private fun onPlayerInteract(event: PlayerInteractEvent) {
+            val player = event.player
+            this@VotePhase.voteables.forEach {
+                val itemKey = "$STATE_KEY_VOTE_ITEM_PREFIX.${it.id}"
+                val item = player.getState<ItemStack>(NomaPlugin::class.java, itemKey) ?: return@forEach
+                if (!player.inventory.itemInMainHand.isSimilar(item)) return@forEach
+                it.inventories[player]?.open()
+                event.setUseItemInHand(Event.Result.DENY)
+            }
         }
     }
 
@@ -117,7 +125,7 @@ open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPh
 
 }
 
-class Voteable<T : Any>(val pool: Pool<Player, T>, val votesPerPlayer: Int, val options: Int, selectionMethod: SelectionMethod, val storeKey: String) {
+class Voteable<T : Any>(val pool: Pool<Player, T>, val votesPerPlayer: Int, val options: Int, selectionMethod: SelectionMethod, val storeKey: String, val slot: Int = -1) {
 
     val id: UUID = UUID.randomUUID()
 
@@ -155,69 +163,73 @@ class Voteable<T : Any>(val pool: Pool<Player, T>, val votesPerPlayer: Int, val 
             .build()
 
         player.setState(NomaPlugin::class.java, itemKey, item)
-        player.inventory.addItem(item)
+
+        when {
+            this.slot < 0 -> player.inventory.addItem(item)
+            else -> player.inventory.setItem(this.slot, item)
+        }
 
         this.inventories.getOrPut(player) {
-            VoteInventoryMenu(player, nameComponent.cascadeColor(NamedTextColor.DARK_GRAY, CascadeType.DEEP_ALL), this)
+            VoteInventoryMenu(player, nameComponent.cascadeColor(NamedTextColor.DARK_GRAY, CascadeType.DEEP_ALL))
         }.update {
             item(4, item)
         }
     }
 
-}
+    inner class VoteInventoryMenu(owner: Player, title: Component) : PagedInventoryMenu(owner, 5 * 9, title) {
 
-class VoteInventoryMenu<T : Any>(owner: Player, title: Component, val voteable: Voteable<T>) : PagedInventoryMenu(owner, 5 * 9, title) {
+        override fun getItemCount(): Int = minOf(this@Voteable.options, this@Voteable.items.size)
 
-    override fun getItemCount(): Int = minOf(this.voteable.options, this.voteable.items.size)
+        override fun getItem(player: Player, index: Int): InventoryItem {
+            val item = this@Voteable.items[index]
+            val builder = when (val pool = this@Voteable.pool) {
+                is SpigotPool<*> -> ItemBuilder(pool.getDisplayItem(player, item))
+                else -> ItemBuilder(Material.PAPER).name(item.corporate())
+            }
 
-    override fun getItem(player: Player, index: Int): InventoryItem {
-        val item = this.voteable.items[index]
-        val builder = when (val pool = this.voteable.pool) {
-            is SpigotPool<*> -> ItemBuilder(pool.getDisplayItem(player, item))
-            else -> ItemBuilder(Material.PAPER).name(item.corporate())
-        }
+            val itemIndex = this@Voteable.items.indexOf(item)
+            val votes = this@Voteable.getVotes(itemIndex)
+            builder.amount(maxOf(votes, 1))
 
-        val itemIndex = this.voteable.items.indexOf(item)
-        val votes = this.voteable.getVotes(itemIndex)
-        builder.amount(maxOf(votes, 1))
+            val isVoted = this@Voteable.votes[player]?.contains(itemIndex) == true
 
-        val isVoted = this.voteable.votes[player]?.contains(itemIndex) == true
+            val votesComponent = SpigotTranslations.PHASE_VOTE_VOTES.translateToComponent(player, votes.toString().highlight()).info()
 
-        val votesComponent = SpigotTranslations.PHASE_VOTE_VOTES.translateToComponent(player, votes.toString().highlight()).info()
-
-        if (isVoted) {
-            builder.glow()
-            builder.lore(
-                votesComponent,
-                Component.empty(),
-                SpigotTranslations.PHASE_VOTE_CLICK_TO_UNVOTE.translateToComponent(player).info()
-            )
-        } else {
-            builder.lore(
-                votesComponent,
-                Component.empty(),
-                SpigotTranslations.PHASE_VOTE_CLICK_TO_VOTE.translateToComponent(player).info()
-            )
-        }
-
-        return builder.build().withAction { _, _ ->
-            val playerVotes = this.voteable.votes.getOrPut(player) { mutableListOf() }
             if (isVoted) {
-                playerVotes.remove(itemIndex)
+                builder.glow()
+                builder.lore(
+                        votesComponent,
+                        Component.empty(),
+                        SpigotTranslations.PHASE_VOTE_CLICK_TO_UNVOTE.translateToComponent(player).info()
+                )
+            } else {
+                builder.lore(
+                        votesComponent,
+                        Component.empty(),
+                        SpigotTranslations.PHASE_VOTE_CLICK_TO_VOTE.translateToComponent(player).info()
+                )
+            }
+
+            return builder.build().withAction { _, _ ->
+                val playerVotes = this@Voteable.votes.getOrPut(player) { mutableListOf() }
+                if (isVoted) {
+                    playerVotes.remove(itemIndex)
+                    updateItem(index)
+                    this@Voteable.updateVoteItem(player)
+                    return@withAction true
+                }
+
+                if (playerVotes.size >= this@Voteable.votesPerPlayer) {
+                    player.sendTranslatedError(SpigotTranslations.PHASE_VOTE_NO_VOTES_LEFT)
+                    return@withAction false
+                }
+
+                playerVotes.add(itemIndex)
                 updateItem(index)
-                this.voteable.updateVoteItem(player)
+                this@Voteable.updateVoteItem(player)
                 return@withAction true
             }
-
-            if (playerVotes.size >= this.voteable.votesPerPlayer) {
-                player.sendTranslatedError(SpigotTranslations.PHASE_VOTE_NO_VOTES_LEFT)
-                return@withAction false
-            }
-
-            playerVotes.add(itemIndex)
-            updateItem(index)
-            this.voteable.updateVoteItem(player)
-            return@withAction true
         }
     }
+
 }

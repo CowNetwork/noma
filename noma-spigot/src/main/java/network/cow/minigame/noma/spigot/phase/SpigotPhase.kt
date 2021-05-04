@@ -22,7 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin
  */
 abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Phase<Player>(game, config), Listener {
 
-    private val listeners = this.getListeners()
+    private lateinit var listeners: Collection<Listener>
 
     val spigotConfig: SpigotPhaseConfig
 
@@ -59,6 +59,7 @@ abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Ph
             }
         }
 
+        this.listeners = this.getListeners()
         this.listeners.forEach {
             Bukkit.getPluginManager().registerEvents(it, JavaPlugin.getPlugin(NomaPlugin::class.java))
         }
