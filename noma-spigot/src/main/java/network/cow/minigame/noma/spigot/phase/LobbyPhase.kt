@@ -14,7 +14,7 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-class LobbyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, PhaseConfig(
+open class LobbyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, PhaseConfig(
     config.key, config.kind, allowsNewPlayers = true, requiresActors = false,
     config.phaseEndCountdown, PhaseTimeoutConfig(Long.MAX_VALUE, true),
     config.storeMiddleware, config.options

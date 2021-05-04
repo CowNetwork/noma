@@ -11,7 +11,7 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-class LobbyVotePhase(game: Game<Player>, config: PhaseConfig<Player>) : VotePhase(game, PhaseConfig(
+open class LobbyVotePhase(game: Game<Player>, config: PhaseConfig<Player>) : VotePhase(game, PhaseConfig(
     config.key, config.kind, allowsNewPlayers = true, requiresActors = false,
     config.phaseEndCountdown, PhaseTimeoutConfig(Long.MAX_VALUE, true),
     config.storeMiddleware, config.options
