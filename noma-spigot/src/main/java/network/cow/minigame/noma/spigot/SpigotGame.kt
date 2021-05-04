@@ -107,9 +107,16 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         this.actorProvider.removePlayer(player)
         this.getCurrentPhase().leave(player)
 
-        if (player.gameMode == GameMode.SPECTATOR) return
-        val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
-        Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_LEFT, player.displayName().highlight(), prefix = prefix)
+        if (player.gameMode != GameMode.SPECTATOR) {
+            val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
+            Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_LEFT, player.displayName().highlight(), prefix = prefix)
+        }
+
+        if (!this.getCurrentPhase().config.allowsNewPlayers && this.getCurrentPhase().config.requiresActors && this.getActors().size < this.config.minActors) {
+            val lastPhaseKey = this.phaseConfigs.last().key
+            if (this.getCurrentPhase().config.key == lastPhaseKey) return
+            this.setPhase(lastPhaseKey, true)
+        }
     }
 
 }
