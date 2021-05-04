@@ -52,8 +52,8 @@ abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Ph
                 it.teleport(this.spigotConfig.teleportSelectionMethod, *locations)
             }
 
-            val players = this.game.getPlayers()
-            Bukkit.getOnlinePlayers().filterNot { it in players }.forEach {
+            val players = this.game.getIngamePlayers()
+            Bukkit.getOnlinePlayers().filter { it !in players }.forEach {
                 val location = this.game.worldProvider.getSpectatorSpawnLocation(this.spigotConfig.teleportSelectionMethod)
                 it.teleport(location)
             }

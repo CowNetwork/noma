@@ -145,7 +145,7 @@ abstract class Game<PlayerType : Any>(
         return if (nextIndex > keys.lastIndex) null else keys[nextIndex]
     }
 
-    fun getPlayers() : Set<PlayerType> {
+    fun getIngamePlayers() : Set<PlayerType> {
         val players = mutableSetOf<PlayerType>()
         this.actors.forEach { players.addAll(it.value.getPlayers()) }
         return players

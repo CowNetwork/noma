@@ -31,6 +31,7 @@ import network.cow.spigot.inventory.InventoryItem
 import network.cow.spigot.inventory.InventoryMenu
 import network.cow.spigot.inventory.PagedInventoryMenu
 import network.cow.spigot.inventory.withAction
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
@@ -71,14 +72,14 @@ open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPh
 
     private fun updateVoteItems(player: Player) = this.voteables.forEach { it.updateVoteItem(player) }
 
-    override fun onStart() = this.game.getPlayers().forEach(this::updateVoteItems)
+    override fun onStart() = this.game.getIngamePlayers().forEach(this::updateVoteItems)
 
     override fun onStop() {
         this.voteables.forEach { votable ->
             val votes = mutableMapOf<String, Int>()
             votable.items.forEachIndexed { index, item -> votes[item] = votable.getVotes(index) }
 
-            this.game.getPlayers().forEach { player -> this.clear(player, votable) }
+            Bukkit.getOnlinePlayers().forEach { player -> this.clear(player, votable) }
 
             this.storeMiddleware.store(votable.storeKey, Result(votes.keys
                 .map { ResultItem(it, votable.pool.getItem(it), votes[it] ?: 0) }

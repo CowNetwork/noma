@@ -2,7 +2,6 @@ package network.cow.minigame.noma.spigot
 
 import network.cow.messages.adventure.gradient
 import network.cow.messages.adventure.highlight
-import network.cow.messages.adventure.prefix
 import network.cow.messages.core.Gradients
 import network.cow.messages.spigot.MessagesPlugin
 import network.cow.messages.spigot.broadcastTranslatedInfo
@@ -74,7 +73,7 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         val phase = this.getCurrentPhase()
         val player = event.player
 
-        if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && this.getPlayers().size >= this.config.maxPlayers)) {
+        if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && this.getIngamePlayers().size >= this.config.maxPlayers)) {
             player.gameMode = GameMode.SPECTATOR
             event.joinMessage(null)
 
