@@ -1,13 +1,10 @@
 package network.cow.minigame.noma.spigot.phase
 
-import network.cow.messages.adventure.highlight
-import network.cow.messages.spigot.broadcastTranslatedInfo
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.Translations
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PhaseTimeoutConfig
 import network.cow.minigame.noma.spigot.SpigotCountdownTimer
-import network.cow.minigame.noma.spigot.SpigotTranslations
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
@@ -20,25 +17,20 @@ class LobbyVotePhase(game: Game<Player>, config: PhaseConfig<Player>) : VotePhas
     config.storeMiddleware, config.options
 )) {
 
-    private val maxWaitDuration = (this.config.options.getOrDefault("maxWaitDuration", 5 * 60) as Int).toLong()
-
-    private val timeoutCountdown = SpigotCountdownTimer(this.maxWaitDuration).silent()
-        .onDone(this::timeout)
-        .onTick {
-            if (it % 30 != 0L) return@onTick
-
-            val missingPlayers = this.game.config.minPlayers - this.game.getPlayers().size
-            if (missingPlayers <= 0) return@onTick
-
-            val key = when (missingPlayers) {
-                1 -> SpigotTranslations.PHASE_LOBBY_WAITING_FOR_PLAYER
-                else -> SpigotTranslations.PHASE_LOBBY_WAITING_FOR_PLAYERS
-            }
-
-            Bukkit.getServer().broadcastTranslatedInfo(key, missingPlayers.toString().highlight())
-        }
+    private val timeoutCountdown = this.createLobbyTimeoutCountdown(this.game, this::tick)
 
     private val startCountdown = SpigotCountdownTimer(this.config.phaseEndCountdown.duration, Translations.COUNTDOWN_MESSAGE_GAME_START).onDone(this::stop)
+
+    private fun tick() {
+        val playerCount = Bukkit.getOnlinePlayers().size
+        if (playerCount < this.game.config.minPlayers) {
+            this.timeoutCountdown.start()
+            this.startCountdown.reset()
+        } else {
+            this.timeoutCountdown.reset()
+            this.startCountdown.start()
+        }
+    }
 
     override fun onStart() {
         super.onStart()

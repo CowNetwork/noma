@@ -20,25 +20,20 @@ class LobbyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(
     config.storeMiddleware, config.options
 )) {
 
-    private val maxWaitDuration = (this.config.options.getOrDefault("maxWaitDuration", 5 * 60) as Int).toLong()
-
-    private val timeoutCountdown = SpigotCountdownTimer(this.maxWaitDuration).silent()
-        .onDone(this::timeout)
-        .onTick {
-            if (it % 30 != 0L) return@onTick
-
-            val missingPlayers = this.game.config.minPlayers - this.game.getPlayers().size
-            if (missingPlayers <= 0) return@onTick
-
-            val key = when (missingPlayers) {
-                1 -> SpigotTranslations.PHASE_LOBBY_WAITING_FOR_PLAYER
-                else -> SpigotTranslations.PHASE_LOBBY_WAITING_FOR_PLAYERS
-            }
-
-            Bukkit.getServer().broadcastTranslatedInfo(key, missingPlayers.toString().highlight())
-        }
+    private val timeoutCountdown = this.createLobbyTimeoutCountdown(this.game, this::tick)
 
     private val startCountdown = SpigotCountdownTimer(this.config.phaseEndCountdown.duration, Translations.COUNTDOWN_MESSAGE_GAME_START).onDone(this::stop)
+
+    private fun tick() {
+        val playerCount = Bukkit.getOnlinePlayers().size
+        if (playerCount < this.game.config.minPlayers) {
+            this.timeoutCountdown.start()
+            this.startCountdown.reset()
+        } else {
+            this.timeoutCountdown.reset()
+            this.startCountdown.start()
+        }
+    }
 
     override fun onStart() {
         this.timeoutCountdown.start()
@@ -55,3 +50,21 @@ class LobbyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(
     override fun onTimeout() = Bukkit.shutdown()
 
 }
+
+fun SpigotPhase.createLobbyTimeoutCountdown(game: Game<*>, tick: () -> Unit) = SpigotCountdownTimer(this.config.timeout.duration).silent()
+        .onDone(this::timeout)
+        .onTick {
+            tick()
+
+            if (it % 30 != 0L) return@onTick
+
+            val missingPlayers = game.config.minPlayers - Bukkit.getOnlinePlayers().size
+            if (missingPlayers <= 0) return@onTick
+
+            val key = when (missingPlayers) {
+                1 -> SpigotTranslations.PHASE_LOBBY_WAITING_FOR_PLAYER
+                else -> SpigotTranslations.PHASE_LOBBY_WAITING_FOR_PLAYERS
+            }
+
+            Bukkit.getServer().broadcastTranslatedInfo(key, missingPlayers.toString().highlight())
+        }
