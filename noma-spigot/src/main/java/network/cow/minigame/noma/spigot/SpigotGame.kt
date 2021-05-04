@@ -86,7 +86,6 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         if (phase.config.requiresActors) {
             this.actorProvider.addPlayer(player)
         }
-        phase.join(player)
 
         // Teleport player to current world.
         val method = if (phase is SpigotPhase) phase.spigotConfig.teleportSelectionMethod else SelectionMethod.ORDERED
@@ -96,6 +95,8 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
 
         val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
         Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_JOINED, player.displayName().highlight(), prefix = prefix)
+
+        phase.join(player)
     }
 
     @EventHandler

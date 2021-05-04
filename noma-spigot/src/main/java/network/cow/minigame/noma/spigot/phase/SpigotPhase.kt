@@ -1,5 +1,6 @@
 package network.cow.minigame.noma.spigot.phase
 
+import net.kyori.adventure.text.Component
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.phase.Phase
@@ -12,6 +13,7 @@ import network.cow.minigame.noma.spigot.config.WorldProviderConfig
 import network.cow.minigame.noma.spigot.world.DefaultWorldProvider
 import network.cow.minigame.noma.spigot.world.WorldProvider
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
@@ -36,6 +38,7 @@ abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Ph
         val teleportMap = this.config.options.getOrElse("teleport") { emptyMap<String, Any>() } as Map<String, Any>
 
         this.spigotConfig = SpigotPhaseConfig(
+            this.config.options.getOrDefault("allowsSpectators", true) as Boolean,
             teleportMap.getOrDefault("onStart", false) as Boolean,
             SelectionMethod.valueOf(teleportMap.getOrDefault("selectionMethod", SelectionMethod.ORDERED.name).toString()),
             worldProviderConfig
@@ -71,6 +74,11 @@ abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Ph
     }
 
     override fun join(player: Player) {
+        if (player.gameMode == GameMode.SPECTATOR && !this.spigotConfig.allowSpectators) {
+            player.kick(Component.text("TODO")) // TODO
+            return
+        }
+
         // Teleport the player to the current map.
         if (this.game is SpigotGame) {
             val actor = this.game.getSpigotActor(player)
