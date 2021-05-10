@@ -48,6 +48,12 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
     }
 
     override fun onSetPhase(oldPhase: Phase<Player>?, newPhase: Phase<Player>?) {
+        if (oldPhase?.config?.requiresActors != true && newPhase?.config?.requiresActors == true) {
+            for (player in Bukkit.getOnlinePlayers().filter { it.gameMode != GameMode.SPECTATOR }.take(this.config.maxPlayers)) {
+                this.actorProvider.addPlayer(player)
+            }
+        }
+
         if (newPhase !is SpigotPhase) return
         val config = newPhase.spigotConfig.worldProvider
         this.worldProvider = config.kind.getDeclaredConstructor(SpigotGame::class.java, WorldProviderConfig::class.java).newInstance(this, config)
@@ -73,7 +79,7 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         val phase = this.getCurrentPhase()
         val player = event.player
 
-        if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && this.getIngamePlayers().size >= this.config.maxPlayers)) {
+        if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && Bukkit.getOnlinePlayers().filter { it.gameMode != GameMode.SPECTATOR }.size >= this.config.maxPlayers)) {
             player.gameMode = GameMode.SPECTATOR
             event.joinMessage(null)
 
