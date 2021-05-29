@@ -79,7 +79,10 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         val phase = this.getCurrentPhase()
         val player = event.player
 
-        if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && Bukkit.getOnlinePlayers().filter { it.gameMode != GameMode.SPECTATOR }.size >= this.config.maxPlayers)) {
+        player.inventory.clear()
+        player.gameMode = GameMode.SURVIVAL
+
+        if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && Bukkit.getOnlinePlayers().filter { it.gameMode != GameMode.SPECTATOR }.size > this.config.maxPlayers)) {
             player.gameMode = GameMode.SPECTATOR
             event.joinMessage(null)
 

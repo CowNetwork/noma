@@ -9,16 +9,16 @@ import network.cow.minigame.noma.api.state.StoreMiddleware
 data class PhaseConfig<PlayerType : Any>(
     val key: String,
     val kind: Class<out Phase<PlayerType>>,
-    val allowsNewPlayers: Boolean,
-    val requiresActors: Boolean,
+    var allowsNewPlayers: Boolean,
+    var requiresActors: Boolean,
     val phaseEndCountdown: PhaseEndCountdownConfig,
     val timeout: PhaseTimeoutConfig,
     val storeMiddleware: StoreMiddlewareConfig,
     val options: Map<String, Any>
 )
 
-data class PhaseTimeoutConfig(val duration: Long, val silent: Boolean)
+data class PhaseTimeoutConfig(var duration: Long, var silent: Boolean)
 
-data class PhaseEndCountdownConfig(val duration: Long)
+data class PhaseEndCountdownConfig(var duration: Long)
 
 data class StoreMiddlewareConfig(val kind: Class<out StoreMiddleware>, val options: Map<String, Any>)

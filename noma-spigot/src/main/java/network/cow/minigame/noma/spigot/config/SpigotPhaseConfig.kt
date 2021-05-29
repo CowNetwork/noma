@@ -6,8 +6,8 @@ import network.cow.minigame.noma.api.SelectionMethod
  * @author Benedikt Wüller
  */
 data class SpigotPhaseConfig(
-        val allowSpectators: Boolean,
-        val teleportOnStart: Boolean,
-        val teleportSelectionMethod: SelectionMethod,
+        var allowSpectators: Boolean,
+        var teleportOnStart: Boolean,
+        var teleportSelectionMethod: SelectionMethod,
         val worldProvider: WorldProviderConfig
 )
