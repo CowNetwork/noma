@@ -11,6 +11,8 @@ import network.cow.minigame.noma.api.state.StoreMiddleware
  */
 abstract class Phase<PlayerType : Any>(protected val game: Game<PlayerType>, val config: PhaseConfig<PlayerType>) {
 
+    protected var isStopping = false; private set
+
     protected val storeMiddleware: StoreMiddleware = this.config.storeMiddleware.kind
         .getDeclaredConstructor(Phase::class.java, Store::class.java, StoreMiddlewareConfig::class.java)
         .newInstance(this, this.game.store, this.config.storeMiddleware)
@@ -20,6 +22,8 @@ abstract class Phase<PlayerType : Any>(protected val game: Game<PlayerType>, val
     }
 
     open fun stop() {
+        if (this.isStopping) return
+        this.isStopping = true
         this.onStop()
     }
 

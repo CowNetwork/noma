@@ -13,6 +13,11 @@ open class EndPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPha
         config.key, config.kind, false, config.requiresActors, config.phaseEndCountdown,
         PhaseTimeoutConfig(0, true), config.storeMiddleware, populateSpigotOptions(config.options.toMutableMap())
 )) {
+
+    companion object {
+        const val STORE_KEY_WINNERS = "winners"
+    }
+
     override fun onStart() = Unit
     override fun onTimeout() = Unit
     override fun onStop() = Unit

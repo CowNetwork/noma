@@ -75,9 +75,9 @@ abstract class Game<PlayerType : Any>(
         val phase = this.getPhase(key)
         this.currentPhaseKey = key
 
+        currentPhase?.stop()
         val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
         this.switchTimer = this.createCountdownTimer(duration, Translations.COUNTDOWN_MESSAGE_PHASE_END_BASE).onDone {
-            currentPhase?.stop()
             this.onSetPhase(currentPhase, phase)
             phase.start()
 
@@ -127,10 +127,10 @@ abstract class Game<PlayerType : Any>(
 
         val currentPhase = if (this::currentPhaseKey.isInitialized) this.getPhase(this.currentPhaseKey) else null
 
+        // Stop current phase
+        currentPhase?.stop()
         val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
         this.switchTimer = this.createCountdownTimer(duration, Translations.COUNTDOWN_MESSAGE_SHUTDOWN_BASE).onDone {
-            // Stop current phase
-            currentPhase?.stop()
             this.onSetPhase(currentPhase, null)
 
             // Cleanup and stop the server.
