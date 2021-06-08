@@ -1,10 +1,13 @@
 package network.cow.minigame.noma.spigot.phase
 
+import net.kyori.adventure.text.Component
 import network.cow.messages.adventure.comp
 import network.cow.messages.adventure.corporate
 import network.cow.messages.adventure.highlight
+import network.cow.messages.adventure.translate
 import network.cow.messages.spigot.broadcastTranslatedInfo
 import network.cow.messages.spigot.sendTranslated
+import network.cow.messages.spigot.sendTranslatedInfo
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PhaseTimeoutConfig
@@ -36,8 +39,14 @@ open class EndPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPha
             else -> error("Ranking is only implemented for the first 3 indices. Index given: $index")
         }
 
-        val winners = rankings[index].map { it.name.highlight() }.reduce { first, second -> first.append(", ".comp()).append(second) }
-        Bukkit.getServer().broadcastTranslatedInfo(SpigotTranslations.PHASE_END_RANKING, ranking.corporate(), winners)
+        val winners = rankings[index].map { it.getPlayers().map { player -> player.displayName() }.join(", ") }.join(", ")
+        Bukkit.getOnlinePlayers().forEach { player ->
+            player.sendTranslatedInfo(
+                SpigotTranslations.PHASE_END_RANKING,
+                ranking.translate(player).corporate(),
+                winners
+            )
+        }
     }
 
     override fun onStart() {
@@ -50,7 +59,7 @@ open class EndPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPha
             this.displayRanking(result.rankings, 1) // 2nd place
             this.displayRanking(result.rankings, 2) // 3rd place
 
-            // Display "your rank: xyz".
+            // Display "your rank: xyz" for all other places.
             for (i in 3 until result.rankings.size) {
                 val ranking = result.rankings[i]
                 ranking.forEach { actor ->
@@ -81,4 +90,8 @@ fun populateSpigotOptions(options: MutableMap<String, Any>) : Map<String, Any> {
     options["worldProvider"] = worldProvider
 
     return options
+}
+
+fun List<Component>.join(separator: String = "") : Component {
+    return this.reduce { first, second -> first.append(separator.comp()).append(second) }
 }
