@@ -5,6 +5,10 @@ package network.cow.minigame.noma.spigot
  */
 object SpigotTranslations {
 
+    const val COMMON_FIRST = "common.ranking.first"
+    const val COMMON_SECOND = "common.ranking.second"
+    const val COMMON_THIRD = "common.ranking.third"
+
     const val PHASE_VOTE_TITLE = "minigame.phase.vote.title"
     const val PHASE_VOTE_VOTES = "minigame.phase.vote.votes"
     const val PHASE_VOTE_VOTES_LEFT = "minigame.phase.vote.votes_left"
@@ -17,9 +21,7 @@ object SpigotTranslations {
     const val PHASE_LOBBY_FULL = "minigame.phase.lobby.full"
 
     const val PHASE_END_NO_WINNERS = "minigame.phase.end.no_winners"
-    const val PHASE_END_FIRST_PLACE = "minigame.phase.end.first_place"
-    const val PHASE_END_SECOND_PLACE = "minigame.phase.end.second_place"
-    const val PHASE_END_THIRD_PLACE = "minigame.phase.end.third_place"
-    const val PHASE_END_YOUR_PLACE = "minigame.phase.end.your_place"
+    const val PHASE_END_RANKING = "minigame.phase.end.ranking"
+    const val PHASE_END_YOUR_RANK = "minigame.phase.end.your_rank"
 
 }

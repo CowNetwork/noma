@@ -1,6 +1,7 @@
 package network.cow.minigame.noma.spigot.phase
 
 import network.cow.messages.adventure.comp
+import network.cow.messages.adventure.corporate
 import network.cow.messages.adventure.highlight
 import network.cow.messages.spigot.broadcastTranslatedInfo
 import network.cow.messages.spigot.sendTranslated
@@ -27,8 +28,16 @@ open class EndPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPha
 
     private fun displayRanking(rankings: List<Set<SpigotActor>>, index: Int) {
         if (rankings.size <= index) return
+
+        val ranking = when (index) {
+            0 -> SpigotTranslations.COMMON_FIRST
+            1 -> SpigotTranslations.COMMON_SECOND
+            2 -> SpigotTranslations.COMMON_THIRD
+            else -> error("Ranking is only implemented for the first 3 indices. Index given: $index")
+        }
+
         val winners = rankings[index].map { it.name.highlight() }.reduce { first, second -> first.append(", ".comp()).append(second) }
-        Bukkit.getServer().broadcastTranslatedInfo(SpigotTranslations.PHASE_END_FIRST_PLACE, winners)
+        Bukkit.getServer().broadcastTranslatedInfo(SpigotTranslations.PHASE_END_RANKING, ranking.corporate(), winners)
     }
 
     override fun onStart() {
@@ -45,7 +54,7 @@ open class EndPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPha
             for (i in 3 until result.rankings.size) {
                 val ranking = result.rankings[i]
                 ranking.forEach { actor ->
-                    actor.apply { it.sendTranslated(SpigotTranslations.PHASE_END_YOUR_PLACE, (i + 1).toString().highlight()) }
+                    actor.apply { it.sendTranslated(SpigotTranslations.PHASE_END_YOUR_RANK, (i + 1).toString().highlight()) }
                 }
             }
         }
