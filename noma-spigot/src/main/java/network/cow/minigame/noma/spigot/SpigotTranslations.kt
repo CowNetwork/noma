@@ -16,4 +16,9 @@ object SpigotTranslations {
     const val PHASE_LOBBY_WAITING_FOR_PLAYERS = "minigame.phase.lobby.waiting_for_players.plural"
     const val PHASE_LOBBY_FULL = "minigame.phase.lobby.full"
 
+    const val PHASE_END_NO_WINNERS = "minigame.phase.end.no_winners"
+    const val PHASE_END_FIRST_PLACE = "minigame.phase.end.first_place"
+    const val PHASE_END_SECOND_PLACE = "minigame.phase.end.second_place"
+    const val PHASE_END_THIRD_PLACE = "minigame.phase.end.third_place"
+
 }
