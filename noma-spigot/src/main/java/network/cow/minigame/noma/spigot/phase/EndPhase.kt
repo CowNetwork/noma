@@ -3,6 +3,7 @@ package network.cow.minigame.noma.spigot.phase
 import network.cow.messages.adventure.comp
 import network.cow.messages.adventure.highlight
 import network.cow.messages.spigot.broadcastTranslatedInfo
+import network.cow.messages.spigot.sendTranslated
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PhaseTimeoutConfig
@@ -39,9 +40,17 @@ open class EndPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPha
             this.displayRanking(result.rankings, 0) // 1st place
             this.displayRanking(result.rankings, 1) // 2nd place
             this.displayRanking(result.rankings, 2) // 3rd place
+
+            // Display "your rank: xyz".
+            for (i in 3 until result.rankings.size) {
+                val ranking = result.rankings[i]
+                ranking.forEach { actor ->
+                    actor.apply { it.sendTranslated(SpigotTranslations.PHASE_END_YOUR_PLACE, (i + 1).toString().highlight()) }
+                }
+            }
         }
 
-        // TODO: statistics
+        // TODO: display statistics slightly delayed
     }
 
     override fun onTimeout() = Unit

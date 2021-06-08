@@ -20,5 +20,6 @@ object SpigotTranslations {
     const val PHASE_END_FIRST_PLACE = "minigame.phase.end.first_place"
     const val PHASE_END_SECOND_PLACE = "minigame.phase.end.second_place"
     const val PHASE_END_THIRD_PLACE = "minigame.phase.end.third_place"
+    const val PHASE_END_YOUR_PLACE = "minigame.phase.end.your_place"
 
 }
