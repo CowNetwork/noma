@@ -94,7 +94,7 @@ class WorldPool(game: SpigotGame, config: PoolConfig<Player>) : SpigotPool<World
                 )
             }
             is String -> TODO("read from string")
-            else -> TODO("error")
+            else -> error("Unsupported location type ${obj.javaClass.name}.")
         }
     }
 

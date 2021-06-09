@@ -22,15 +22,18 @@ class StoreWorldProvider(game: SpigotGame, config: WorldProviderConfig) : WorldP
     private lateinit var world: World
 
     override fun selectWorld(): World {
-        val value = this.game.store.get<Any>(storeKey) ?: TODO("error")
+        val value = this.game.store.get<Any>(storeKey) ?: error("No WorldMeta exists for store key $storeKey.")
         this.worldMeta = when (value) {
             is WorldMeta -> value
-            is VotePhase.Result<*> -> {
-                val item = value.items.firstOrNull()?.value ?: TODO("error")
-                if (item !is WorldMeta) TODO("error")
-                item
+            is List<*> -> {
+                val item = value.firstOrNull { it is WorldMeta } ?: error("The list for store key $storeKey does not contain any WorldMeta item.")
+                item as WorldMeta
             }
-            else -> TODO("error")
+            is VotePhase.Result<*> -> {
+                val item = value.items.firstOrNull { it.value is WorldMeta } ?.value ?: error("The vote phase result for store key $storeKey does not contain any WorldMeta item.")
+                item as WorldMeta
+            }
+            else -> error("Unsupported store value type ${value.javaClass.name}.")
         }
 
         val targetName = UUID.randomUUID().toString()
