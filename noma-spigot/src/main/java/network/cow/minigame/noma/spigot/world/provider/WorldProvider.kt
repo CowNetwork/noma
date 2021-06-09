@@ -1,4 +1,4 @@
-package network.cow.minigame.noma.spigot.world
+package network.cow.minigame.noma.spigot.world.provider
 
 import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.spigot.SpigotActor

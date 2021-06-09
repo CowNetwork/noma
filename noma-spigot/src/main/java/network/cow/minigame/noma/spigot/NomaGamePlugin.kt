@@ -1,6 +1,6 @@
 package network.cow.minigame.noma.spigot
 
-import network.cow.minigame.noma.api.actor.ActorProvider
+import network.cow.minigame.noma.api.actor.provider.ActorProvider
 import network.cow.minigame.noma.api.config.ActorProviderConfig
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig
@@ -10,8 +10,8 @@ import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.config.StoreMiddlewareConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.api.pool.Pool
-import network.cow.minigame.noma.api.store.DefaultStoreMiddleware
-import network.cow.minigame.noma.api.store.StoreMiddleware
+import network.cow.minigame.noma.api.store.middleware.Default
+import network.cow.minigame.noma.api.store.middleware.StoreMiddleware
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -88,7 +88,7 @@ open class NomaGamePlugin : JavaPlugin() {
 
                 val storeMiddlewareMap = (map["storeMiddleware"] ?: emptyMap<String, Any>()) as Map<String, Any>
                 val storeMiddlewareConfig = StoreMiddlewareConfig(
-                    storeMiddlewareMap["kind"]?.toString()?.let<String, Class<out StoreMiddleware>?>(::parseClass) ?: DefaultStoreMiddleware::class.java,
+                    storeMiddlewareMap["kind"]?.toString()?.let<String, Class<out StoreMiddleware>?>(::parseClass) ?: Default::class.java,
                     storeMiddlewareMap
                 )
 

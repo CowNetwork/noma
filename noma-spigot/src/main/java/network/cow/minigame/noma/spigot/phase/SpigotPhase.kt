@@ -12,7 +12,7 @@ import network.cow.minigame.noma.spigot.SpigotTranslations
 import network.cow.minigame.noma.spigot.config.SpigotPhaseConfig
 import network.cow.minigame.noma.spigot.config.WorldProviderConfig
 import network.cow.minigame.noma.spigot.parseClass
-import network.cow.minigame.noma.spigot.world.DefaultWorldProvider
+import network.cow.minigame.noma.spigot.world.provider.CurrentWorld
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.HandlerList
@@ -31,7 +31,7 @@ abstract class SpigotPhase(game: SpigotGame, config: PhaseConfig<Player>) : Phas
     init {
         val worldProviderMap = this.config.options.getOrElse("worldProvider") { emptyMap<String, Any>() } as Map<String, Any>
         val worldProviderConfig = WorldProviderConfig(
-            parseClass(worldProviderMap.getOrDefault("kind", DefaultWorldProvider::class.java.name).toString()),
+            parseClass(worldProviderMap.getOrDefault("kind", CurrentWorld::class.java.name).toString()),
             worldProviderMap
         )
 

@@ -1,4 +1,4 @@
-package network.cow.minigame.noma.spigot.world
+package network.cow.minigame.noma.spigot.world.provider
 
 import network.cow.minigame.noma.spigot.SpigotActor
 import network.cow.minigame.noma.spigot.SpigotGame
@@ -10,7 +10,7 @@ import org.bukkit.World
 /**
  * @author Benedikt Wüller
  */
-class InitialWorldProvider(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
+class InitialWorld(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
 
     override fun selectWorld(): World = Bukkit.getWorlds().first()
 

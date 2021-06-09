@@ -1,7 +1,7 @@
 package network.cow.minigame.noma.api
 
 import network.cow.minigame.noma.api.actor.Actor
-import network.cow.minigame.noma.api.actor.ActorProvider
+import network.cow.minigame.noma.api.actor.provider.ActorProvider
 import network.cow.minigame.noma.api.config.ActorProviderConfig
 import network.cow.minigame.noma.api.config.GameConfig
 import network.cow.minigame.noma.api.config.PhaseConfig

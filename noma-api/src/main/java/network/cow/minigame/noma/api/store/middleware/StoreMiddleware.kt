@@ -1,7 +1,8 @@
-package network.cow.minigame.noma.api.store
+package network.cow.minigame.noma.api.store.middleware
 
 import network.cow.minigame.noma.api.config.StoreMiddlewareConfig
 import network.cow.minigame.noma.api.phase.Phase
+import network.cow.minigame.noma.api.store.Store
 
 /**
  * @author Benedikt Wüller

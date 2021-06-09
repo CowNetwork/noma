@@ -12,7 +12,7 @@ import network.cow.minigame.noma.api.config.PhaseTimeoutConfig
 import network.cow.minigame.noma.spigot.SpigotActor
 import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.minigame.noma.spigot.SpigotTranslations
-import network.cow.minigame.noma.spigot.world.InitialWorldProvider
+import network.cow.minigame.noma.spigot.world.provider.InitialWorld
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
@@ -85,7 +85,7 @@ fun populateSpigotOptions(options: MutableMap<String, Any>) : Map<String, Any> {
     options["teleport"] = teleport
 
     val worldProvider = ((options["worldProvider"] as Map<String, Any>?)?.toMutableMap() ?: mutableMapOf())
-    worldProvider["kind"] = worldProvider.getOrDefault("kind", InitialWorldProvider::class.java.name)
+    worldProvider["kind"] = worldProvider.getOrDefault("kind", InitialWorld::class.java.name)
     options["worldProvider"] = worldProvider
 
     return options

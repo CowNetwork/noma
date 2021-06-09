@@ -1,4 +1,4 @@
-package network.cow.minigame.noma.spigot.world
+package network.cow.minigame.noma.spigot.world.provider
 
 import network.cow.minigame.noma.spigot.SpigotActor
 import network.cow.minigame.noma.spigot.SpigotGame
@@ -14,7 +14,7 @@ import java.util.UUID
 /**
  * @author Benedikt Wüller
  */
-class StoreWorldProvider(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
+class StoreWorld(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
 
     private val storeKey = this.config.options["storeKey"]?.toString() ?: error("No store key has been defined for 'phases.*.worldProvider.storeKey'.")
 

@@ -1,6 +1,6 @@
 package network.cow.minigame.noma.spigot.config
 
-import network.cow.minigame.noma.spigot.world.WorldProvider
+import network.cow.minigame.noma.spigot.world.provider.WorldProvider
 
 /**
  * @author Benedikt Wüller

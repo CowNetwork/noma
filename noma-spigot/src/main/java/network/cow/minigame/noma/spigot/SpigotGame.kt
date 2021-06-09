@@ -15,8 +15,8 @@ import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.spigot.config.WorldProviderConfig
 import network.cow.minigame.noma.spigot.phase.SpigotPhase
-import network.cow.minigame.noma.spigot.world.DefaultWorldProvider
-import network.cow.minigame.noma.spigot.world.WorldProvider
+import network.cow.minigame.noma.spigot.world.provider.CurrentWorld
+import network.cow.minigame.noma.spigot.world.provider.WorldProvider
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.World
@@ -40,7 +40,7 @@ open class SpigotGame(config: GameConfig<Player, SpigotGame>, phaseConfigs: List
     }
 
     var world: World = Bukkit.getWorlds().first(); private set
-    var worldProvider: WorldProvider = DefaultWorldProvider(this, WorldProviderConfig(DefaultWorldProvider::class.java, emptyMap())); private set
+    var worldProvider: WorldProvider = CurrentWorld(this, WorldProviderConfig(CurrentWorld::class.java, emptyMap())); private set
 
     init {
         Bukkit.getPluginManager().registerEvents(this, JavaPlugin.getPlugin(NomaPlugin::class.java))
