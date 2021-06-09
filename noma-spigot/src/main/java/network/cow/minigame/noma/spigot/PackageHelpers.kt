@@ -5,15 +5,15 @@ package network.cow.minigame.noma.spigot
  */
 
 private val PACKAGE_REPLACEMENTS = mapOf(
-    "noma/actorProviders" to "network.cow.minigame.noma.api.actor.provider.",
-    "noma/phases" to "network.cow.minigame.noma.api.phase.",
-    "noma/pools" to "network.cow.minigame.noma.api.pool.",
-    "noma/storeMiddlewares" to "network.cow.minigame.noma.api.store.middleware.",
-    "noma-spigot/actorProviders" to "network.cow.minigame.noma.spigot.actor.provider.",
-    "noma-spigot/phases" to "network.cow.minigame.noma.spigot.phase.",
-    "noma-spigot/pools" to "network.cow.minigame.noma.spigot.pool.",
-    "noma-spigot/storeMiddlewares" to "network.cow.minigame.noma.spigot.store.middleware.",
-    "noma-spigot/worldProviders" to "network.cow.minigame.noma.spigot.world.provider.",
+    "noma/actorProviders/" to "network.cow.minigame.noma.api.actor.provider.",
+    "noma/phases/" to "network.cow.minigame.noma.api.phase.",
+    "noma/pools/" to "network.cow.minigame.noma.api.pool.",
+    "noma/storeMiddlewares/" to "network.cow.minigame.noma.api.store.middleware.",
+    "noma/spigot/actorProviders/" to "network.cow.minigame.noma.spigot.actor.provider.",
+    "noma/spigot/phases/" to "network.cow.minigame.noma.spigot.phase.",
+    "noma/spigot/pools/" to "network.cow.minigame.noma.spigot.pool.",
+    "noma/spigot/storeMiddlewares/" to "network.cow.minigame.noma.spigot.store.middleware.",
+    "noma/spigot/worldProviders/" to "network.cow.minigame.noma.spigot.world.provider.",
 )
 
 fun <T : Any> parseClass(value: String) : Class<out T> {
