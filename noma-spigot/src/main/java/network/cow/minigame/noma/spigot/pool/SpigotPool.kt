@@ -11,7 +11,7 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-abstract class SpigotPool<ItemType : Any>(game: SpigotGame, config: PoolConfig<Player>) : Pool<Player, SpigotGame, ItemType>(game, config) {
+abstract class SpigotPool<ItemType : Any>(game: SpigotGame, config: PoolConfig<Player, SpigotGame>) : Pool<Player, SpigotGame, ItemType>(game, config) {
 
     open fun getDisplayItem(player: Player, key: String) = ItemBuilder(Material.PAPER).name(key.corporate()).build()
 

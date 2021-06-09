@@ -26,7 +26,7 @@ import java.nio.file.Paths
 /**
  * @author Benedikt Wüller
  */
-class WorldPool(game: SpigotGame, config: PoolConfig<Player>) : SpigotPool<WorldMeta>(game, config) {
+class WorldPool(game: SpigotGame, config: PoolConfig<Player, SpigotGame>) : SpigotPool<WorldMeta>(game, config) {
 
     private val maps = mutableMapOf<String, WorldMeta>()
     private val relativeConfigPath = this.config.options.get("relativeConfigLocation", "mapconfig.yml")

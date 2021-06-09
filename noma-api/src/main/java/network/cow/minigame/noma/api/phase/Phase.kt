@@ -9,7 +9,7 @@ import network.cow.minigame.noma.api.store.middleware.StoreMiddleware
 /**
  * @author Benedikt Wüller
  */
-abstract class Phase<PlayerType : Any, GameType : Game<PlayerType, GameType>>(protected val game: GameType, val config: PhaseConfig<PlayerType>) {
+abstract class Phase<PlayerType : Any, GameType : Game<PlayerType, GameType>>(protected val game: GameType, val config: PhaseConfig<PlayerType, GameType>) {
 
     protected var isStopping = false; private set
 

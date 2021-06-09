@@ -19,7 +19,7 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-open class EndPhase(game: SpigotGame, config: PhaseConfig<Player>) : SpigotPhase(game, PhaseConfig(
+open class EndPhase(game: SpigotGame, config: PhaseConfig<Player, SpigotGame>) : SpigotPhase(game, PhaseConfig(
         config.key, config.kind, false, config.requiresActors, config.phaseEndCountdown,
         PhaseTimeoutConfig(0, true), config.storeMiddleware, populateSpigotOptions(config.options.toMutableMap())
 )) {

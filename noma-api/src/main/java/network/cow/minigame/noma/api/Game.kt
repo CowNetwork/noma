@@ -15,8 +15,8 @@ import network.cow.minigame.noma.api.store.Store
  */
 abstract class Game<PlayerType : Any, GameType : Game<PlayerType, GameType>>(
     val config: GameConfig<PlayerType, GameType>,
-    val phaseConfigs: List<PhaseConfig<PlayerType>>,
-    val poolConfigs: List<PoolConfig<PlayerType>>
+    val phaseConfigs: List<PhaseConfig<PlayerType, GameType>>,
+    val poolConfigs: List<PoolConfig<PlayerType, GameType>>
 ) {
 
     private val actors = mutableMapOf<String, Actor<PlayerType>>()

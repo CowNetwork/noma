@@ -32,7 +32,7 @@ import org.bukkit.scoreboard.Team
 /**
  * @author Benedikt Wüller
  */
-open class SpigotGame(config: GameConfig<Player, SpigotGame>, phaseConfigs: List<PhaseConfig<Player>>, poolConfigs: List<PoolConfig<Player>>)
+open class SpigotGame(config: GameConfig<Player, SpigotGame>, phaseConfigs: List<PhaseConfig<Player, SpigotGame>>, poolConfigs: List<PoolConfig<Player, SpigotGame>>)
     : Game<Player, SpigotGame>(config, phaseConfigs, poolConfigs), Listener {
 
     companion object {

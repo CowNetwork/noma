@@ -22,7 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin
 /**
  * @author Benedikt Wüller
  */
-abstract class SpigotPhase(game: SpigotGame, config: PhaseConfig<Player>) : Phase<Player, SpigotGame>(game, config), Listener {
+abstract class SpigotPhase(game: SpigotGame, config: PhaseConfig<Player, SpigotGame>) : Phase<Player, SpigotGame>(game, config), Listener {
 
     private lateinit var listeners: Collection<Listener>
 

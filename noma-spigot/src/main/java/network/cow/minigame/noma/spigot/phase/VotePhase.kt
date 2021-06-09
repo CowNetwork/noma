@@ -47,7 +47,7 @@ import java.util.UUID
 
 private const val STATE_KEY_VOTE_ITEM_PREFIX = "vote_phase_item"
 
-open class VotePhase(game: SpigotGame, config: PhaseConfig<Player>) : SpigotPhase(game, config) {
+open class VotePhase(game: SpigotGame, config: PhaseConfig<Player, SpigotGame>) : SpigotPhase(game, config) {
 
     private val interactListener = InteractListener()
 

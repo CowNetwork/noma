@@ -73,8 +73,8 @@ open class NomaGamePlugin : JavaPlugin() {
     }
 
     @Suppress("UncheckedCast")
-    private fun loadPhaseConfigs(files: Iterable<File>) : List<PhaseConfig<Player>> {
-        val configs = mutableListOf<PhaseConfig<Player>>()
+    private fun loadPhaseConfigs(files: Iterable<File>) : List<PhaseConfig<Player, SpigotGame>> {
+        val configs = mutableListOf<PhaseConfig<Player, SpigotGame>>()
 
         files.forEach { file ->
             val config = YamlConfiguration.loadConfiguration(file)
@@ -94,7 +94,7 @@ open class NomaGamePlugin : JavaPlugin() {
 
                 configs.add(PhaseConfig(
                     map["key"]?.toString() ?: error("Field 'key' is missing for phase in ${file.name}."),
-                    parseClass<Phase<Player, SpigotGame>>(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")),
+                    parseClass(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")),
                     (map["allowsNewPlayers"] ?: false) as Boolean,
                     (map["requiresActors"] ?: true) as Boolean,
                     countdown,
@@ -108,8 +108,8 @@ open class NomaGamePlugin : JavaPlugin() {
         return configs
     }
 
-    private fun loadPoolConfigs(files: Iterable<File>) : List<PoolConfig<Player>> {
-        val configs = mutableListOf<PoolConfig<Player>>()
+    private fun loadPoolConfigs(files: Iterable<File>) : List<PoolConfig<Player, SpigotGame>> {
+        val configs = mutableListOf<PoolConfig<Player, SpigotGame>>()
         files.forEach { file ->
             val config = YamlConfiguration.loadConfiguration(file)
             config.getMapList("pools").forEach {
@@ -117,7 +117,7 @@ open class NomaGamePlugin : JavaPlugin() {
 
                 configs.add(PoolConfig(
                     map["key"]?.toString() ?: error("Field 'key' is missing for phase in ${file.name}."),
-                    parseClass<Pool<Player, SpigotGame, *>>(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")),
+                    parseClass(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")),
                     map.getOrDefault("items", emptyList<String>()) as List<String>,
                     map
                 ))
