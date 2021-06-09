@@ -14,7 +14,7 @@ import java.util.UUID
 /**
  * @author Benedikt Wüller
  */
-class StoreWorld(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
+class StoredWorld(game: SpigotGame, config: WorldProviderConfig) : WorldProvider(game, config) {
 
     private val storeKey = this.config.options["storeKey"]?.toString() ?: error("No store key has been defined for 'phases.*.worldProvider.storeKey'.")
 
