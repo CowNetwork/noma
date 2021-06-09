@@ -12,6 +12,8 @@ import org.bukkit.World
  */
 abstract class WorldProvider(protected val game: SpigotGame, val config: WorldProviderConfig) {
 
+    // TODO: provide a way to add game rules and spawns to a map (WorldMeta?)
+
     abstract fun selectWorld() : World
 
     abstract fun getSpawnLocations(actor: SpigotActor? = null) : List<Location>

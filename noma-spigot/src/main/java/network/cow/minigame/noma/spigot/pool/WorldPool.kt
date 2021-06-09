@@ -50,7 +50,7 @@ class WorldPool(game: SpigotGame, config: PoolConfig<Player>) : SpigotPool<World
 
         val actorSpawnLocations = mutableMapOf<String, List<SpawnLocation>>()
         (config.getList("actorSpawns", emptyList<Map<String, Any>>()) as List<Map<String, Any>>).forEach {
-            val key = it["actorKey"]?.toString() ?: error("") // TODO
+            val key = it["actorKey"]?.toString() ?: error("A value has to be provided for 'actorSpawns.*.actorKey'.")
             actorSpawnLocations[key] = it.get<List<Any>>("spawns", emptyList()).map(this::readLocation)
         }
 
@@ -58,8 +58,8 @@ class WorldPool(game: SpigotGame, config: PoolConfig<Player>) : SpigotPool<World
         val gameRules = mutableMapOf<GameRule<Any>, Any>()
 
         gameRuleSection?.getKeys(false)?.forEach {
-            val gameRule = GameRule.getByName(it) as GameRule<Any>? ?: error("") // TODO
-            val value = gameRuleSection.get(it) ?: error("") // TODO
+            val gameRule = GameRule.getByName(it) as GameRule<Any>? ?: error("No game rule exists for key '$it'.")
+            val value = gameRuleSection.get(it)!!
             gameRules[gameRule] = value
         }
 

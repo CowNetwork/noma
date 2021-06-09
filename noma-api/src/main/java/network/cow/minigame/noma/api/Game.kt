@@ -112,6 +112,8 @@ abstract class Game<PlayerType : Any, GameType : Game<PlayerType, GameType>>(
 
     fun getPhase(key: String) = this.phases[key] ?: error("The phase with key '$key' does not exist for 'phases.*.key'.")
 
+    fun <T : Phase<PlayerType, GameType>> getTypedPhase(key: String) = this.getPhase(key) as? T
+
     fun getCurrentPhase() = this.getPhase(this.currentPhaseKey)
 
     fun getPool(key: String) = this.pools[key] ?: error("The pool with the given key '$key' does not exist for 'pools.*.key'.")
