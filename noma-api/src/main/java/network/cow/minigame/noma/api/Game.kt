@@ -34,7 +34,7 @@ abstract class Game<PlayerType : Any, GameType : Game<PlayerType, GameType>>(
     var isStopping = false; private set
 
     val actorProvider: ActorProvider<PlayerType, GameType> = this.config.actorProvider.kind
-        .getDeclaredConstructor(Game::class.java, ActorProviderConfig::class.java)
+        .getDeclaredConstructor(this.javaClass, ActorProviderConfig::class.java)
         .newInstance(this, this.config.actorProvider)
 
     val store: Store = Store()
@@ -43,11 +43,11 @@ abstract class Game<PlayerType : Any, GameType : Game<PlayerType, GameType>>(
         if (this.phaseConfigs.isEmpty()) error("There must be at least one phase configured.")
 
         this.poolConfigs.forEach {
-            this.pools[it.key] = it.kind.getDeclaredConstructor(Game::class.java, PoolConfig::class.java).newInstance(this, it)
+            this.pools[it.key] = it.kind.getDeclaredConstructor(this.javaClass, PoolConfig::class.java).newInstance(this, it)
         }
 
         this.phaseConfigs.forEach {
-            this.phases[it.key] = it.kind.getDeclaredConstructor(Game::class.java, PhaseConfig::class.java).newInstance(this, it)
+            this.phases[it.key] = it.kind.getDeclaredConstructor(this.javaClass, PhaseConfig::class.java).newInstance(this, it)
         }
     }
 
