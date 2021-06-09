@@ -1,4 +1,4 @@
-package network.cow.minigame.noma.api.state
+package network.cow.minigame.noma.api.store
 
 import network.cow.minigame.noma.api.config.StoreMiddlewareConfig
 import network.cow.minigame.noma.api.phase.Phase

@@ -6,10 +6,10 @@ import network.cow.messages.adventure.corporate
 import network.cow.messages.adventure.highlight
 import network.cow.messages.adventure.info
 import network.cow.messages.adventure.translate
-import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.Translations
 import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.get
+import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.spigot.extensions.ItemBuilder
 import org.bukkit.GameRule
 import org.bukkit.Location
@@ -26,7 +26,7 @@ import java.nio.file.Paths
 /**
  * @author Benedikt Wüller
  */
-class WorldPool(game: Game<Player>, config: PoolConfig<Player>) : SpigotPool<WorldMeta>(game, config) {
+class WorldPool(game: SpigotGame, config: PoolConfig<Player>) : SpigotPool<WorldMeta>(game, config) {
 
     private val maps = mutableMapOf<String, WorldMeta>()
     private val relativeConfigPath = this.config.options.get("relativeConfigLocation", "mapconfig.yml")

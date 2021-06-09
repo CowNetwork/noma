@@ -8,23 +8,23 @@ import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.api.pool.Pool
-import network.cow.minigame.noma.api.state.Store
+import network.cow.minigame.noma.api.store.Store
 
 /**
  * @author Benedikt Wüller
  */
-abstract class Game<PlayerType : Any>(
-    val config: GameConfig<PlayerType>,
+abstract class Game<PlayerType : Any, GameType : Game<PlayerType, GameType>>(
+    val config: GameConfig<PlayerType, GameType>,
     val phaseConfigs: List<PhaseConfig<PlayerType>>,
     val poolConfigs: List<PoolConfig<PlayerType>>
 ) {
 
     private val actors = mutableMapOf<String, Actor<PlayerType>>()
 
-    private val phases = LinkedHashMap<String, Phase<PlayerType>>()
+    private val phases = LinkedHashMap<String, Phase<PlayerType, GameType>>()
     private lateinit var currentPhaseKey: String
 
-    private val pools = mutableMapOf<String, Pool<PlayerType, *>>()
+    private val pools = mutableMapOf<String, Pool<PlayerType, GameType, *>>()
 
     private var switchTimer: CountdownTimer? = null
     private var timeoutTimer: CountdownTimer? = null
@@ -33,7 +33,7 @@ abstract class Game<PlayerType : Any>(
 
     var isStopping = false; private set
 
-    val actorProvider: ActorProvider<PlayerType> = this.config.actorProvider.kind
+    val actorProvider: ActorProvider<PlayerType, GameType> = this.config.actorProvider.kind
         .getDeclaredConstructor(Game::class.java, ActorProviderConfig::class.java)
         .newInstance(this, this.config.actorProvider)
 
@@ -116,7 +116,7 @@ abstract class Game<PlayerType : Any>(
 
     fun getPool(key: String) = this.pools[key] ?: error("The pool with the given key '$key' does not exist for 'pools.*.key'.")
 
-    fun <T : Any> getTypedPool(key: String) = this.getPool(key) as Pool<PlayerType, T>
+    fun <T : Any> getTypedPool(key: String) = this.getPool(key) as Pool<PlayerType, GameType, T>
 
     fun stop(skipCountdown: Boolean = false) {
         if (this.isStopping) return
@@ -163,7 +163,7 @@ abstract class Game<PlayerType : Any>(
 
     protected abstract fun onStop()
 
-    protected abstract fun onSetPhase(oldPhase: Phase<PlayerType>?, newPhase: Phase<PlayerType>?)
+    protected abstract fun onSetPhase(oldPhase: Phase<PlayerType, GameType>?, newPhase: Phase<PlayerType, GameType>?)
 
     protected abstract fun createCountdownTimer(duration: Long, baseTranslationKey: String = Translations.COUNTDOWN_MESSAGE_GENERIC_BASE) : CountdownTimer
 

@@ -16,11 +16,11 @@ import network.cow.messages.adventure.translate
 import network.cow.messages.adventure.translateToComponent
 import network.cow.messages.core.Gradients
 import network.cow.messages.spigot.sendTranslatedError
-import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.SelectionMethod
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.pool.Pool
 import network.cow.minigame.noma.spigot.NomaPlugin
+import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.minigame.noma.spigot.SpigotTranslations
 import network.cow.minigame.noma.spigot.pool.SpigotPool
 import network.cow.spigot.extensions.ItemBuilder
@@ -47,7 +47,7 @@ import java.util.UUID
 
 private const val STATE_KEY_VOTE_ITEM_PREFIX = "vote_phase_item"
 
-open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, config) {
+open class VotePhase(game: SpigotGame, config: PhaseConfig<Player>) : SpigotPhase(game, config) {
 
     private val interactListener = InteractListener()
 
@@ -126,7 +126,7 @@ open class VotePhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPh
 
 }
 
-class Voteable<T : Any>(val pool: Pool<Player, T>, val votesPerPlayer: Int, val options: Int, selectionMethod: SelectionMethod, val storeKey: String, val slot: Int = -1) {
+class Voteable<T : Any>(val pool: Pool<Player, SpigotGame, T>, val votesPerPlayer: Int, val options: Int, selectionMethod: SelectionMethod, val storeKey: String, val slot: Int = -1) {
 
     val id: UUID = UUID.randomUUID()
 

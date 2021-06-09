@@ -1,4 +1,4 @@
-package network.cow.minigame.noma.api.state
+package network.cow.minigame.noma.api.store
 
 /**
  * @author Benedikt Wüller

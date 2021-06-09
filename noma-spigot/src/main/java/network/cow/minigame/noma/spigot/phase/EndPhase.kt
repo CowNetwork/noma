@@ -6,12 +6,11 @@ import network.cow.messages.adventure.corporate
 import network.cow.messages.adventure.highlight
 import network.cow.messages.adventure.translate
 import network.cow.messages.spigot.broadcastTranslatedInfo
-import network.cow.messages.spigot.sendTranslated
 import network.cow.messages.spigot.sendTranslatedInfo
-import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PhaseTimeoutConfig
 import network.cow.minigame.noma.spigot.SpigotActor
+import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.minigame.noma.spigot.SpigotTranslations
 import network.cow.minigame.noma.spigot.world.InitialWorldProvider
 import org.bukkit.Bukkit
@@ -20,7 +19,7 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-open class EndPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, PhaseConfig(
+open class EndPhase(game: SpigotGame, config: PhaseConfig<Player>) : SpigotPhase(game, PhaseConfig(
         config.key, config.kind, false, config.requiresActors, config.phaseEndCountdown,
         PhaseTimeoutConfig(0, true), config.storeMiddleware, populateSpigotOptions(config.options.toMutableMap())
 )) {
@@ -63,7 +62,7 @@ open class EndPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPha
             for (i in 3 until result.rankings.size) {
                 val ranking = result.rankings[i]
                 ranking.forEach { actor ->
-                    actor.apply { it.sendTranslated(SpigotTranslations.PHASE_END_YOUR_RANK, (i + 1).toString().highlight()) }
+                    actor.apply { it.sendTranslatedInfo(SpigotTranslations.PHASE_END_YOUR_RANK, (i + 1).toString().highlight()) }
                 }
             }
         }

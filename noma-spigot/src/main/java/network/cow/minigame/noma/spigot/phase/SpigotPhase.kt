@@ -1,9 +1,7 @@
 package network.cow.minigame.noma.spigot.phase
 
-import net.kyori.adventure.text.Component
 import network.cow.messages.adventure.error
 import network.cow.messages.adventure.translateToComponent
-import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.api.SelectionMethod
@@ -13,10 +11,9 @@ import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.minigame.noma.spigot.SpigotTranslations
 import network.cow.minigame.noma.spigot.config.SpigotPhaseConfig
 import network.cow.minigame.noma.spigot.config.WorldProviderConfig
+import network.cow.minigame.noma.spigot.parseClass
 import network.cow.minigame.noma.spigot.world.DefaultWorldProvider
-import network.cow.minigame.noma.spigot.world.WorldProvider
 import org.bukkit.Bukkit
-import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
@@ -25,7 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin
 /**
  * @author Benedikt Wüller
  */
-abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Phase<Player>(game, config), Listener {
+abstract class SpigotPhase(game: SpigotGame, config: PhaseConfig<Player>) : Phase<Player, SpigotGame>(game, config), Listener {
 
     private lateinit var listeners: Collection<Listener>
 
@@ -34,7 +31,7 @@ abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Ph
     init {
         val worldProviderMap = this.config.options.getOrElse("worldProvider") { emptyMap<String, Any>() } as Map<String, Any>
         val worldProviderConfig = WorldProviderConfig(
-            Class.forName(worldProviderMap.getOrDefault("kind", DefaultWorldProvider::class.java.name).toString()) as Class<out WorldProvider>,
+            parseClass(worldProviderMap.getOrDefault("kind", DefaultWorldProvider::class.java.name).toString()),
             worldProviderMap
         )
 
@@ -52,7 +49,7 @@ abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Ph
         super.start()
 
         // Teleport players on start if requested.
-        if (this.spigotConfig.teleportOnStart && this.game is SpigotGame) {
+        if (this.spigotConfig.teleportOnStart) {
             this.game.getSpigotActors().forEach {
                 val locations = this.game.worldProvider.getSpawnLocations(it).toTypedArray()
                 it.teleport(this.spigotConfig.teleportSelectionMethod, *locations)
@@ -83,12 +80,10 @@ abstract class SpigotPhase(game: Game<Player>, config: PhaseConfig<Player>) : Ph
         }
 
         // Teleport the player to the current map.
-        if (this.game is SpigotGame) {
-            val actor = this.game.getSpigotActor(player)
-            if (actor is SpigotActor) {
-                val location = this.game.worldProvider.getSpawnLocation(actor, this.spigotConfig.teleportSelectionMethod)
-                player.teleport(location)
-            }
+        val actor = this.game.getSpigotActor(player)
+        if (actor is SpigotActor) {
+            val location = this.game.worldProvider.getSpawnLocation(actor, this.spigotConfig.teleportSelectionMethod)
+            player.teleport(location)
         }
 
         super.join(player)

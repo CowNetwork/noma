@@ -2,11 +2,11 @@ package network.cow.minigame.noma.spigot.phase
 
 import network.cow.messages.adventure.highlight
 import network.cow.messages.spigot.broadcastTranslatedInfo
-import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.Translations
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.PhaseTimeoutConfig
 import network.cow.minigame.noma.spigot.SpigotCountdownTimer
+import network.cow.minigame.noma.spigot.SpigotGame
 import network.cow.minigame.noma.spigot.SpigotTranslations
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -14,7 +14,7 @@ import org.bukkit.entity.Player
 /**
  * @author Benedikt Wüller
  */
-open class LobbyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotPhase(game, PhaseConfig(
+open class LobbyPhase(game: SpigotGame, config: PhaseConfig<Player>) : SpigotPhase(game, PhaseConfig(
     config.key, config.kind, allowsNewPlayers = true, requiresActors = false,
     config.phaseEndCountdown, PhaseTimeoutConfig(Long.MAX_VALUE, true),
     config.storeMiddleware, config.options.toMutableMap().apply { this["allowsSpectators"] = false }
@@ -53,7 +53,7 @@ open class LobbyPhase(game: Game<Player>, config: PhaseConfig<Player>) : SpigotP
 
 }
 
-fun SpigotPhase.createLobbyTimeoutCountdown(game: Game<*>, tick: () -> Unit) = SpigotCountdownTimer(this.config.timeout.duration).silent()
+fun SpigotPhase.createLobbyTimeoutCountdown(game: SpigotGame, tick: () -> Unit) = SpigotCountdownTimer(this.config.timeout.duration).silent()
         .onDone(this::timeout)
         .onTick {
             tick()

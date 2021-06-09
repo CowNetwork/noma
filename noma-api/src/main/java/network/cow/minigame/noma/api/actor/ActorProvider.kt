@@ -6,7 +6,7 @@ import network.cow.minigame.noma.api.config.ActorProviderConfig
 /**
  * @author Benedikt Wüller
  */
-abstract class ActorProvider<PlayerType : Any>(protected val game: Game<PlayerType>, protected val config: ActorProviderConfig<PlayerType>) {
+abstract class ActorProvider<PlayerType : Any, GameType : Game<PlayerType, GameType>>(protected val game: GameType, protected val config: ActorProviderConfig<PlayerType, GameType>) {
 
     private val playerActors = mutableMapOf<PlayerType, Actor<PlayerType>>()
 

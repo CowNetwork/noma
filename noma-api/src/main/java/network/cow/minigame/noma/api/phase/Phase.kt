@@ -3,13 +3,13 @@ package network.cow.minigame.noma.api.phase
 import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.config.PhaseConfig
 import network.cow.minigame.noma.api.config.StoreMiddlewareConfig
-import network.cow.minigame.noma.api.state.Store
-import network.cow.minigame.noma.api.state.StoreMiddleware
+import network.cow.minigame.noma.api.store.Store
+import network.cow.minigame.noma.api.store.StoreMiddleware
 
 /**
  * @author Benedikt Wüller
  */
-abstract class Phase<PlayerType : Any>(protected val game: Game<PlayerType>, val config: PhaseConfig<PlayerType>) {
+abstract class Phase<PlayerType : Any, GameType : Game<PlayerType, GameType>>(protected val game: GameType, val config: PhaseConfig<PlayerType>) {
 
     protected var isStopping = false; private set
 

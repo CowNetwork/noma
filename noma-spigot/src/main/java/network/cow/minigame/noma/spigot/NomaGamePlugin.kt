@@ -1,6 +1,5 @@
 package network.cow.minigame.noma.spigot
 
-import network.cow.minigame.noma.api.Game
 import network.cow.minigame.noma.api.actor.ActorProvider
 import network.cow.minigame.noma.api.config.ActorProviderConfig
 import network.cow.minigame.noma.api.config.GameConfig
@@ -11,8 +10,8 @@ import network.cow.minigame.noma.api.config.PoolConfig
 import network.cow.minigame.noma.api.config.StoreMiddlewareConfig
 import network.cow.minigame.noma.api.phase.Phase
 import network.cow.minigame.noma.api.pool.Pool
-import network.cow.minigame.noma.api.state.DefaultStoreMiddleware
-import network.cow.minigame.noma.api.state.StoreMiddleware
+import network.cow.minigame.noma.api.store.DefaultStoreMiddleware
+import network.cow.minigame.noma.api.store.StoreMiddleware
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -28,7 +27,7 @@ import kotlin.streams.toList
  */
 open class NomaGamePlugin : JavaPlugin() {
 
-    lateinit var game: Game<Player>; protected set
+    lateinit var game: SpigotGame; protected set
 
     override fun onEnable() {
         val basePath = this.dataFolder.absolutePath
@@ -89,13 +88,13 @@ open class NomaGamePlugin : JavaPlugin() {
 
                 val storeMiddlewareMap = (map["storeMiddleware"] ?: emptyMap<String, Any>()) as Map<String, Any>
                 val storeMiddlewareConfig = StoreMiddlewareConfig(
-                    storeMiddlewareMap["kind"]?.toString()?.let { Class.forName(it) as Class<out StoreMiddleware> } ?: DefaultStoreMiddleware::class.java,
+                    storeMiddlewareMap["kind"]?.toString()?.let<String, Class<out StoreMiddleware>?>(::parseClass) ?: DefaultStoreMiddleware::class.java,
                     storeMiddlewareMap
                 )
 
                 configs.add(PhaseConfig(
                     map["key"]?.toString() ?: error("Field 'key' is missing for phase in ${file.name}."),
-                    Class.forName(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")) as Class<out Phase<Player>>,
+                    parseClass<Phase<Player, SpigotGame>>(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")),
                     (map["allowsNewPlayers"] ?: false) as Boolean,
                     (map["requiresActors"] ?: true) as Boolean,
                     countdown,
@@ -118,7 +117,7 @@ open class NomaGamePlugin : JavaPlugin() {
 
                 configs.add(PoolConfig(
                     map["key"]?.toString() ?: error("Field 'key' is missing for phase in ${file.name}."),
-                    Class.forName(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")) as Class<out Pool<Player, *>>,
+                    parseClass<Pool<Player, SpigotGame, *>>(map["kind"]?.toString() ?: error("Field 'kind' is missing for phase in ${file.name}.")),
                     map.getOrDefault("items", emptyList<String>()) as List<String>,
                     map
                 ))
@@ -127,12 +126,12 @@ open class NomaGamePlugin : JavaPlugin() {
         return configs
     }
 
-    private fun loadGameConfig(file: File) : GameConfig<Player> {
+    private fun loadGameConfig(file: File) : GameConfig<Player, SpigotGame> {
         val config = YamlConfiguration.loadConfiguration(file).getConfigurationSection("game") ?: error("Root element 'game' is missing in ${file.name}.")
 
         val actorProvider = config.getConfigurationSection("actorProvider") ?: error("Section 'game.actorProvider' is missing in ${file.name}.")
         val actorProviderConfig = ActorProviderConfig(
-            Class.forName(actorProvider.getString("kind") ?: error("Field 'game.actorProvider.kind' is missing in ${file.name}.")) as Class<out ActorProvider<Player>>,
+            parseClass<ActorProvider<Player, SpigotGame>>(actorProvider.getString("kind") ?: error("Field 'game.actorProvider.kind' is missing in ${file.name}.")),
             actorProvider.getValues(false)
         )
 

@@ -32,8 +32,12 @@ import org.bukkit.scoreboard.Team
 /**
  * @author Benedikt Wüller
  */
-open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig<Player>>, poolConfigs: List<PoolConfig<Player>>)
-    : Game<Player>(config, phaseConfigs, poolConfigs), Listener {
+open class SpigotGame(config: GameConfig<Player, SpigotGame>, phaseConfigs: List<PhaseConfig<Player>>, poolConfigs: List<PoolConfig<Player>>)
+    : Game<Player, SpigotGame>(config, phaseConfigs, poolConfigs), Listener {
+
+    companion object {
+        val FALLBACK_PREFIX = "Minigame".gradient(Gradients.MINIGAME)
+    }
 
     var world: World = Bukkit.getWorlds().first(); private set
     var worldProvider: WorldProvider = DefaultWorldProvider(this, WorldProviderConfig(DefaultWorldProvider::class.java, emptyMap())); private set
@@ -47,7 +51,7 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         Bukkit.shutdown()
     }
 
-    override fun onSetPhase(oldPhase: Phase<Player>?, newPhase: Phase<Player>?) {
+    override fun onSetPhase(oldPhase: Phase<Player, SpigotGame>?, newPhase: Phase<Player, SpigotGame>?) {
         if (oldPhase?.config?.requiresActors != true && newPhase?.config?.requiresActors == true) {
             for (player in Bukkit.getOnlinePlayers().filter { it.gameMode != GameMode.SPECTATOR }.take(this.config.maxPlayers)) {
                 this.actorProvider.addPlayer(player)
@@ -102,7 +106,7 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
 
         event.joinMessage(null)
 
-        val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
+        val prefix = MessagesPlugin.PREFIX ?: FALLBACK_PREFIX
         Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_JOINED, player.displayName().highlight(), prefix = prefix)
 
         phase.join(player)
@@ -117,7 +121,7 @@ open class SpigotGame(config: GameConfig<Player>, phaseConfigs: List<PhaseConfig
         this.getCurrentPhase().leave(player)
 
         if (player.gameMode != GameMode.SPECTATOR) {
-            val prefix = MessagesPlugin.PREFIX ?: "Minigame".gradient(Gradients.MINIGAME)
+            val prefix = MessagesPlugin.PREFIX ?: FALLBACK_PREFIX
             Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_LEFT, player.displayName().highlight(), prefix = prefix)
         }
 
