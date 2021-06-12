@@ -46,7 +46,7 @@ abstract class Phase<PlayerType : Any, GameType : Game<PlayerType, GameType>>(pr
 
     protected abstract fun onStop()
 
-    abstract fun onStopped()
+    open fun onStopped() = Unit
 
     protected abstract fun onPlayerJoin(player: PlayerType)
 
