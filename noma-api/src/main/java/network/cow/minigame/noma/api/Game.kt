@@ -78,6 +78,7 @@ abstract class Game<PlayerType : Any, GameType : Game<PlayerType, GameType>>(
         currentPhase?.stop()
         val duration = if (skipCountdown) 0 else (currentPhase?.config?.phaseEndCountdown?.duration ?: 0)
         this.switchTimer = this.createCountdownTimer(duration, Translations.COUNTDOWN_MESSAGE_PHASE_END_BASE).onDone {
+            currentPhase?.onStopped()
             this.onSetPhase(currentPhase, phase)
             phase.start()
 
