@@ -81,7 +81,7 @@ open class EndPhase(game: SpigotGame, config: PhaseConfig<Player, SpigotGame>) :
 
 fun populateSpigotOptions(options: MutableMap<String, Any>) : Map<String, Any> {
     val teleport = ((options["teleport"] as Map<String, Any>?)?.toMutableMap() ?: mutableMapOf())
-    teleport["onStart"] = true
+    teleport["onStart"] = teleport.getOrDefault("onStart", true)
     options["teleport"] = teleport
 
     val worldProvider = ((options["worldProvider"] as Map<String, Any>?)?.toMutableMap() ?: mutableMapOf())
