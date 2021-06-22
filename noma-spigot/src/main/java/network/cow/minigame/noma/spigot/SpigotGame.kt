@@ -28,6 +28,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scoreboard.Team
+import org.spigotmc.event.player.PlayerSpawnLocationEvent
 
 /**
  * @author Benedikt Wüller
@@ -86,13 +87,10 @@ open class SpigotGame(config: GameConfig<Player, SpigotGame>, phaseConfigs: List
         player.inventory.clear()
         player.gameMode = GameMode.SURVIVAL
 
+        event.joinMessage(null)
+
         if (!phase.config.allowsNewPlayers || (this.config.maxPlayers >= 0 && Bukkit.getOnlinePlayers().filter { it.gameMode != GameMode.SPECTATOR }.size > this.config.maxPlayers)) {
             player.gameMode = GameMode.SPECTATOR
-            event.joinMessage(null)
-
-            // Teleport spectator to current world.
-            val method = if (phase is SpigotPhase) phase.spigotConfig.teleportSelectionMethod else SelectionMethod.ORDERED
-            player.teleport(this.worldProvider.getSpectatorSpawnLocation(method))
             return
         }
 
@@ -100,16 +98,25 @@ open class SpigotGame(config: GameConfig<Player, SpigotGame>, phaseConfigs: List
             this.actorProvider.addPlayer(player)
         }
 
-        // Teleport player to current world.
-        val method = if (phase is SpigotPhase) phase.spigotConfig.teleportSelectionMethod else SelectionMethod.ORDERED
-        player.teleport(this.worldProvider.getSpawnLocation(this.getSpigotActor(player), method))
-
-        event.joinMessage(null)
-
         val prefix = MessagesPlugin.PREFIX ?: FALLBACK_PREFIX
         Bukkit.getServer().broadcastTranslatedInfo(Translations.PLAYER_JOINED, player.displayName().highlight(), prefix = prefix)
 
         phase.join(player)
+    }
+
+    @EventHandler
+    private fun onPlayerSpawn(event: PlayerSpawnLocationEvent) {
+        val phase = this.getCurrentPhase()
+        val player = event.player
+
+        val method = if (phase is SpigotPhase) phase.spigotConfig.teleportSelectionMethod else SelectionMethod.ORDERED
+
+        // Teleport player to current world.
+        if (player.gameMode == GameMode.SPECTATOR) {
+            event.spawnLocation = this.worldProvider.getSpectatorSpawnLocation(method)
+        } else {
+            event.spawnLocation = this.worldProvider.getSpawnLocation(this.getSpigotActor(player), method)
+        }
     }
 
     @EventHandler
