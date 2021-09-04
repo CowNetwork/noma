@@ -197,6 +197,7 @@ class Voteable<T : Any>(val pool: Pool<Player, SpigotGame, T>, val votesPerPlaye
             val votesComponent = SpigotTranslations.PHASE_VOTE_VOTES.translateToComponent(player, votes.toString().highlight()).info()
 
             if (isVoted) {
+                builder.material(Material.MAP)
                 builder.glow()
                 builder.lore(
                         votesComponent,
@@ -221,8 +222,13 @@ class Voteable<T : Any>(val pool: Pool<Player, SpigotGame, T>, val votesPerPlaye
                 }
 
                 if (playerVotes.size >= this@Voteable.votesPerPlayer) {
-                    player.sendTranslatedError(SpigotTranslations.PHASE_VOTE_NO_VOTES_LEFT)
-                    return@withAction false
+                    if (this@Voteable.votesPerPlayer != 1) {
+                        player.sendTranslatedError(SpigotTranslations.PHASE_VOTE_NO_VOTES_LEFT)
+                        return@withAction false
+                    }
+
+                    val currentIndex = playerVotes.removeAt(0)
+                    updateItem(currentIndex)
                 }
 
                 playerVotes.add(itemIndex)
