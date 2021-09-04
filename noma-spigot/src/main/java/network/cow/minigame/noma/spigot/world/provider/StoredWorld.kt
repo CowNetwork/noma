@@ -53,6 +53,7 @@ class StoredWorld(game: SpigotGame, config: WorldProviderConfig) : WorldProvider
 
     override fun getSpawnLocations(actor: SpigotActor?): List<Location> {
         val locations = actor?.let { this.worldMeta.actorSpawnLocations[actor.key] } ?: this.worldMeta.globalSpawnLocations
+        if (locations.isEmpty()) return listOf(this.game.world.spawnLocation)
         return locations.map { it.toLocation(this.world) }
     }
 
