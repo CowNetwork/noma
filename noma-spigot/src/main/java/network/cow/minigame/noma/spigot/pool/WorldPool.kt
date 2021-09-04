@@ -48,28 +48,51 @@ class WorldPool(game: SpigotGame, config: PoolConfig<Player, SpigotGame>) : Spig
     override fun getItem(key: String): WorldMeta = this.maps[key]!!
 
     private fun readWorldMeta(path: Path) : WorldMeta {
-        val config = YamlConfiguration.loadConfiguration(Paths.get(path.toString(), this.relativeConfigPath).toFile())
+        val file = Paths.get(path.toString(), this.relativeConfigPath).toFile()
+        val config = if (file.exists()) YamlConfiguration.loadConfiguration(file) else null
 
-        val globalSpawnLocations = (config.getList("globalSpawns", emptyList<Map<String, Any>>()) as List<Map<String, Any>>).map(this::readLocation)
+        val globalSpawnLocations: List<SpawnLocation>
+        val actorSpawnLocations: Map<String, List<SpawnLocation>>
+        val gameRules: Map<GameRule<Any>, Any>
 
-        val actorSpawnLocations = mutableMapOf<String, List<SpawnLocation>>()
-        (config.getList("actorSpawns", emptyList<Map<String, Any>>()) as List<Map<String, Any>>).forEach {
-            val key = it["actorKey"]?.toString() ?: error("A value has to be provided for 'actorSpawns.*.actorKey'.")
-            actorSpawnLocations[key] = it.get<List<Any>>("spawns", emptyList()).map(this::readLocation)
+        val name: String
+        val authors: List<String>
+        val material: Material
+
+        val options: Map<String, Any>
+
+        if (config != null) {
+            globalSpawnLocations = (config.getList("globalSpawns", emptyList<Map<String, Any>>()) as List<Map<String, Any>>).map(this::readLocation)
+
+            actorSpawnLocations = mutableMapOf()
+            (config.getList("actorSpawns", emptyList<Map<String, Any>>()) as List<Map<String, Any>>).forEach {
+                val key = it["actorKey"]?.toString() ?: error("A value has to be provided for 'actorSpawns.*.actorKey'.")
+                actorSpawnLocations[key] = it.get<List<Any>>("spawns", emptyList()).map(this::readLocation)
+            }
+
+            val gameRuleSection = config.getConfigurationSection("gameRules")
+            gameRules = mutableMapOf()
+
+            gameRuleSection?.getKeys(false)?.forEach {
+                val gameRule = GameRule.getByName(it) as GameRule<Any>? ?: error("No game rule exists for key '$it'.")
+                val value = gameRuleSection.get(it)!!
+                gameRules[gameRule] = value
+            }
+
+            name = config.getString("name", path.fileName.toString())!!
+            authors = config.getString("authors")?.split(",") ?: emptyList()
+            material = config.getString("material")?.let { Material.valueOf(it) } ?: Material.STONE
+
+            options = config.getValues(false)
+        } else {
+            name = path.fileName.toString()
+            authors = emptyList()
+            material = Material.STONE
+            globalSpawnLocations = emptyList()
+            actorSpawnLocations = emptyMap()
+            gameRules = emptyMap()
+            options = emptyMap()
         }
-
-        val gameRuleSection = config.getConfigurationSection("gameRules")
-        val gameRules = mutableMapOf<GameRule<Any>, Any>()
-
-        gameRuleSection?.getKeys(false)?.forEach {
-            val gameRule = GameRule.getByName(it) as GameRule<Any>? ?: error("No game rule exists for key '$it'.")
-            val value = gameRuleSection.get(it)!!
-            gameRules[gameRule] = value
-        }
-
-        val name = config.getString("name", path.fileName.toString())!!
-        val authors = config.getString("authors", "-")?.split(",") ?: emptyList()
-        val material = config.getString("material")?.let { Material.valueOf(it) } ?: Material.STONE
 
         return WorldMeta(
             path,
@@ -79,7 +102,7 @@ class WorldPool(game: SpigotGame, config: PoolConfig<Player, SpigotGame>) : Spig
             globalSpawnLocations,
             actorSpawnLocations,
             gameRules,
-            config.getValues(false)
+            options
         )
     }
 
