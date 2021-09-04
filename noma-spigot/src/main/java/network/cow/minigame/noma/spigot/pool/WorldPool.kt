@@ -33,8 +33,12 @@ class WorldPool(game: SpigotGame, config: PoolConfig<Player, SpigotGame>) : Spig
 
     init {
         val path = this.config.options["location"].toString()
+        val filter = (this.config.options["filter"]?.toString() ?: ".*").toRegex()
+
         val worlds = Files.list(Paths.get(path))
-        worlds.forEach {
+        worlds.filter {
+            it.fileName.toString().matches(filter)
+        }.forEach {
             this.maps[it.fileName.toString()] = this.readWorldMeta(it.toAbsolutePath())
         }
     }
