@@ -28,7 +28,6 @@ import network.cow.spigot.extensions.state.clearState
 import network.cow.spigot.extensions.state.getState
 import network.cow.spigot.extensions.state.setState
 import network.cow.spigot.inventory.InventoryItem
-import network.cow.spigot.inventory.InventoryMenu
 import network.cow.spigot.inventory.PagedInventoryMenu
 import network.cow.spigot.inventory.withAction
 import org.bukkit.Bukkit
@@ -126,13 +125,19 @@ open class VotePhase(game: SpigotGame, config: PhaseConfig<Player, SpigotGame>) 
 
 }
 
-class Voteable<T : Any>(val pool: Pool<Player, SpigotGame, T>, val votesPerPlayer: Int, val options: Int, selectionMethod: SelectionMethod, val storeKey: String, val slot: Int = -1) {
+class Voteable<T : Any>(
+    val pool: Pool<Player, SpigotGame, T>,
+    val votesPerPlayer: Int,
+    val options: Int, selectionMethod: SelectionMethod,
+    val storeKey: String,
+    val slot: Int = -1
+) {
 
     val id: UUID = UUID.randomUUID()
 
     val votes = mutableMapOf<Player, MutableList<Int>>()
 
-    val inventories = mutableMapOf<Player, InventoryMenu>()
+    val inventories = mutableMapOf<Player, PagedInventoryMenu>()
 
     val items = when (selectionMethod) {
         SelectionMethod.RANDOM -> this.pool.getKeys().shuffled()
@@ -216,7 +221,7 @@ class Voteable<T : Any>(val pool: Pool<Player, SpigotGame, T>, val votesPerPlaye
                 val playerVotes = this@Voteable.votes.getOrPut(player) { mutableListOf() }
                 if (isVoted) {
                     playerVotes.remove(itemIndex)
-                    updateItem(index)
+                    this.updateAllInventories(index)
                     this@Voteable.updateVoteItem(player)
                     return@withAction true
                 }
@@ -228,15 +233,20 @@ class Voteable<T : Any>(val pool: Pool<Player, SpigotGame, T>, val votesPerPlaye
                     }
 
                     val currentIndex = playerVotes.removeAt(0)
-                    updateItem(currentIndex)
+                    this.updateAllInventories(currentIndex)
                 }
 
                 playerVotes.add(itemIndex)
-                updateItem(index)
+                this.updateAllInventories(index)
                 this@Voteable.updateVoteItem(player)
                 return@withAction true
             }
         }
+
+        private fun updateAllInventories(index: Int) {
+            this@Voteable.inventories.values.forEach { it.updateItem(index) }
+        }
+
     }
 
 }
